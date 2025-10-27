@@ -1,6 +1,11 @@
 {
   "OCTOBER 2025": [
     {
+      "title": "NPC Schedule Expansion",
+      "description": "Special event days (market discounts, festivals) and black market system (midnight rare item shop).",
+      "status": "In Progress"
+    },
+    {
       "title": "Fantasy Stat Allocation System",
       "description": "Manual 100-point character creation system with 8 attributes (VIT, SPI, STR, END, INT, WIS, DEX, FOR) and soft caps.",
       "status": "Completed"
@@ -19,11 +24,6 @@
       "title": "Area Name Display",
       "description": "Automatic location display with subtitles when entering maps, themed with parchment UI.",
       "status": "Completed"
-    },
-    {
-      "title": "NPC Schedule Expansion",
-      "description": "Special event days (market discounts, festivals) and black market system (midnight rare item shop).",
-      "status": "In Progress"
     }
   ],
   "NOVEMBER 2025": [
