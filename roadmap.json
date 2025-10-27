@@ -43,22 +43,82 @@
       "title": "Quest Plugin Review & Enhancement",
       "description": "Testing and improving existing quest tracking system.",
       "status": "Planned"
+    },
+    {
+      "title": "Enemy Stat Rebalance",
+      "description": "Rework and rebalance current enemy stat values across all maps to align with new stat allocation system.",
+      "status": "Planned"
     }
   ],
-  "2026": [
+  "JANUARY 2026": [
+    {
+      "title": "Tutorial Quest Implementation",
+      "description": "Create and implement all side quests, guild quests, and main story quests for tutorial area with proper pacing and rewards.",
+      "status": "Planned"
+    },
+    {
+      "title": "Crafting Recipe Balance",
+      "description": "Fine-tune crafting progression, material costs, and recipe unlock levels to match demo content.",
+      "status": "Planned"
+    },
+    {
+      "title": "Combat Encounter Design",
+      "description": "Design and place all enemy encounters in tutorial area with proper difficulty scaling and variety.",
+      "status": "Planned"
+    }
+  ],
+  "FEBRUARY 2026": [
     {
       "title": "Lore Journal Plugin",
-      "description": "Discoverable entries system with categories (Creatures, Locations, History, Characters) and AUI integration.",
+      "description": "Discoverable entries system with categories (Creatures, Locations, History, Characters) and AUI Fantasy theme integration.",
       "status": "Planned"
     },
     {
       "title": "Hidden Skills Design",
-      "description": "5 extreme build archetype skills (Tank, Glass Cannon, Speedster, Mage, Gambler).",
+      "description": "Five extreme build archetype skills (Tank, Glass Cannon, Speedster, Mage, Gambler) with themed abilities and unlock messages.",
       "status": "Planned"
     },
     {
-      "title": "More Coming Soon",
-      "description": "More new stuff to be announced.",
+      "title": "Save/Load Testing",
+      "description": "Comprehensive testing of all custom plugins for save file compatibility and data persistence.",
+      "status": "Planned"
+    }
+  ],
+  "MARCH 2026": [
+    {
+      "title": "UI/UX Polish Pass",
+      "description": "Ensure all AUI Fantasy themed windows are consistent, responsive, and properly display information across all systems.",
+      "status": "Planned"
+    },
+    {
+      "title": "Performance Optimization",
+      "description": "Profile and optimize plugin performance, especially with multiple systems running simultaneously.",
+      "status": "Planned"
+    }
+  ],
+   "APRIL 2026": [
+    {
+      "title": "Tutorial Messaging & Tooltips",
+      "description": "Create clear in-game explanations for all custom systems (stat allocation, time system, crafting, etc.).",
+      "status": "Planned"
+    },
+    {
+      "title": "Demo Content Cap",
+      "description": "Implement proper demo endpoint (level cap, area restrictions, 'to be continued' message).",
+      "status": "Planned"
+    }
+  ],
+  "MAY 2026": [
+    {
+      "title": "Bug Fixing & Playtesting",
+      "description": "Full playthrough testing with external testers, bug documentation and fixes.",
+      "status": "Planned"
+    }
+  ],
+  "JUNE 2026": [
+    {
+      "title": "DEMO Release!",
+      "description": "Fully playable demo available for download.",
       "status": "Planned"
     }
   ]
