@@ -1,0 +1,33 @@
+{
+  "NOVEMBER 2025": [
+    {
+      "title": "New Boss Battle: Dragon Lord Myridra",
+      "description": "Expanding the Whispering Woods arc with a new cinematic boss fight.",
+      "status": "In Progress"
+    },
+    {
+      "title": "Performance Optimization",
+      "description": "Improving game loading and combat responsiveness.",
+      "status": "Planned"
+    }
+  ],
+  "Early 2026": [
+    {
+      "title": "Chapter 2 Story Expansion",
+      "description": "Continuing Akira’s journey at the Academy with new allies and enemies.",
+      "status": "Planned"
+    },
+    {
+      "title": "New Soundtrack Update",
+      "description": "Featuring reworked elemental themes and new ambient music.",
+      "status": "In Progress"
+    }
+  ],
+  "Mid 2026": [
+    {
+      "title": "Multiplayer Co-Op Mode",
+      "description": "Allow players to tackle dungeons and challenges together.",
+      "status": "Planned"
+    }
+  ]
+}
