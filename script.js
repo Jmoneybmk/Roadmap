@@ -4,7 +4,7 @@ async function loadRoadmap() {
     const response = await fetch('roadmap.json');
     const data = await response.json();
 
-    Object.keys(data).forEach(timeframe => {
+    Object.entries(data).forEach(([timeframe, items]) => {
       const section = document.createElement('section');
       section.className = "bg-gray-800 rounded-2xl p-5 shadow-lg";
 
@@ -13,7 +13,7 @@ async function loadRoadmap() {
       title.textContent = timeframe;
       section.appendChild(title);
 
-      data[timeframe].forEach(item => {
+      items.forEach(item => {
         const card = document.createElement('div');
         card.className = "mb-4 p-4 rounded-lg border border-gray-700 hover:bg-gray-700 transition";
 
@@ -24,10 +24,10 @@ async function loadRoadmap() {
         }[item.status] || "text-gray-400";
 
         card.innerHTML = `
-          <h3 class="text-lg font-bold">${item.title}</h3>
-          <p class="text-sm text-gray-300 mb-2">${item.description}</p>
-          <span class="${statusColor} text-sm font-semibold">${item.status}</span>
-        `;
+      <h3 class="text-lg font-bold">${item.title}</h3>
+      <p class="text-sm text-gray-300 mb-2">${item.description}</p>
+      <span class="${statusColor} text-sm font-semibold">${item.status}</span>
+    `;
         section.appendChild(card);
       });
 
