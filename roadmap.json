@@ -1,32 +1,64 @@
 {
+  "OCTOBER 2025": [
+    {
+      "title": "Fantasy Stat Allocation System",
+      "description": "Manual 100-point character creation system with 8 attributes (VIT, SPI, STR, END, INT, WIS, DEX, FOR) and soft caps.",
+      "status": "Completed"
+    },
+    {
+      "title": "Skill Reward System",
+      "description": "One-time character creation rewards for extreme builds, grants unique skills based on stat allocation risk.",
+      "status": "Completed"
+    },
+    {
+      "title": "Real-Time Day System",
+      "description": "Dynamic time tracking with day/night phases, screen tints, ambient effects, and time skip functionality.",
+      "status": "Completed"
+    },
+    {
+      "title": "Area Name Display",
+      "description": "Automatic location display with subtitles when entering maps, themed with parchment UI.",
+      "status": "Completed"
+    },
+    {
+      "title": "NPC Schedule Expansion",
+      "description": "Special event days (market discounts, festivals) and black market system (midnight rare item shop).",
+      "status": "In Progress"
+    }
+  ],
   "NOVEMBER 2025": [
     {
-      "title": "New Boss Battle: Dragon Lord Myridra",
-      "description": "Expanding the Whispering Woods arc with a new cinematic boss fight.",
-      "status": "In Progress"
-    },
-    {
-      "title": "Performance Optimization",
-      "description": "Improving game loading and combat responsiveness.",
-      "status": "Planned"
-    }
-  ],
-  "Early 2026": [
-    {
-      "title": "Chapter 2 Story Expansion",
-      "description": "Continuing Akira’s journey at the Academy with new allies and enemies.",
+      "title": "Dynamic Shop Prices",
+      "description": "Time-based pricing system that fluctuates based on day/phase/special events.",
       "status": "Planned"
     },
     {
-      "title": "New Soundtrack Update",
-      "description": "Featuring reworked elemental themes and new ambient music.",
-      "status": "In Progress"
+      "title": "Equipment Augmentation System",
+      "description": "Gem/rune socketing system for custom gear enhancement.",
+      "status": "Planned"
     }
   ],
-  "Mid 2026": [
+  "DECEMBER 2025": [
     {
-      "title": "Multiplayer Co-Op Mode",
-      "description": "Allow players to tackle dungeons and challenges together.",
+      "title": "Quest Plugin Review & Enhancement",
+      "description": "Testing and improving existing quest tracking system.",
+      "status": "Planned"
+    }
+  ],
+  "2026": [
+    {
+      "title": "Lore Journal Plugin",
+      "description": "Discoverable entries system with categories (Creatures, Locations, History, Characters) and AUI integration.",
+      "status": "Planned"
+    },
+    {
+      "title": "Hidden Skills Design",
+      "description": "5 extreme build archetype skills (Tank, Glass Cannon, Speedster, Mage, Gambler).",
+      "status": "Planned"
+    },
+    {
+      "title": "More Coming Soon",
+      "description": "More new stuff to be announced.",
       "status": "Planned"
     }
   ]
