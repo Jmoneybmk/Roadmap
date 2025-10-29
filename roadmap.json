@@ -28,8 +28,13 @@
   ],
   "NOVEMBER 2025": [
     {
-      "title": "Scan System Plugin",
-      "description": "Implemented a permanent enemy scanning mechanic that reveals HP bars and stats across all battles, with proper handling for actor-to-enemy conversions, death cleanup, and silent execution without battle log spam.",
+      "title": "Actor to Enemy Conversion",
+      "description": "Full conversion system with AI, stats and skill.",
+      "status": "In-Progress"
+    },
+    {
+      "title": "Scan-System",
+      "description": "Permanent enemy scanning with HP bars, Buff and Debuffs status info.",
       "status": "In-Progress"
     },
     {
