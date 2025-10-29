@@ -28,13 +28,8 @@
   ],
   "NOVEMBER 2025": [
     {
-      "title": "Actor to Enemy Conversion",
-      "description": "Full conversion system with AI, stats and skill.",
-      "status": "In-Progress"
-    },
-    {
-      "title": "Scan-System",
-      "description": "Permanent enemy scanning with HP bars, Buff and Debuffs status info.",
+      "title": "Equipment Augmentation System",
+      "description": "Gem/rune socketing system for custom gear enhancement.",
       "status": "In-Progress"
     },
     {
@@ -43,9 +38,14 @@
       "status": "Planned"
     },
     {
-      "title": "Equipment Augmentation System",
-      "description": "Gem/rune socketing system for custom gear enhancement.",
-      "status": "Planned"
+      "title": "Actor to Enemy Conversion",
+      "description": "Full conversion system with AI, stats and skill.",
+      "status": "Completed"
+    },
+    {
+      "title": "Scan-System",
+      "description": "Permanent enemy scanning with HP bars, Buff and Debuffs status info.",
+      "status": "Completed"
     }
   ],
   "DECEMBER 2025": [
