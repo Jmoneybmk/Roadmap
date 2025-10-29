@@ -28,6 +28,11 @@
   ],
   "NOVEMBER 2025": [
     {
+      "title": "Scan System Plugin",
+      "description": "Implemented a permanent enemy scanning mechanic that reveals HP bars and stats across all battles, with proper handling for actor-to-enemy conversions, death cleanup, and silent execution without battle log spam.",
+      "status": "In-Progress"
+    },
+    {
       "title": "Dynamic Shop Prices",
       "description": "Time-based pricing system that fluctuates based on day/phase/special events.",
       "status": "Planned"
@@ -69,7 +74,7 @@
   ],
   "FEBRUARY 2026": [
     {
-      "title": "Lore Journal Plugin",
+      "title": "Scan System Expansion: Lore Journal",
       "description": "Discoverable entries system with categories (Creatures, Locations, History, Characters) and AUI Fantasy theme integration.",
       "status": "Planned"
     },
