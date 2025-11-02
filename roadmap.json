@@ -28,14 +28,14 @@
   ],
   "NOVEMBER 2025": [
     {
-      "title": "Equipment Augmentation System",
-      "description": "Gem/rune socketing system for custom gear enhancement.",
+      "title": "Quest Plugin Review & Enhancement",
+      "description": "Testing and improving existing quest tracking system.",
       "status": "In-Progress"
     },
     {
-      "title": "Dynamic Shop Prices",
-      "description": "Time-based pricing system that fluctuates based on day/phase/special events.",
-      "status": "Planned"
+      "title": "Equipment Augmentation System",
+      "description": "Gem/rune socketing system for custom gear enhancement.",
+      "status": "In-Progress"
     },
     {
       "title": "Actor to Enemy Conversion",
@@ -50,8 +50,8 @@
   ],
   "DECEMBER 2025": [
     {
-      "title": "Quest Plugin Review & Enhancement",
-      "description": "Testing and improving existing quest tracking system.",
+      "title": "Dynamic Shop Prices",
+      "description": "Time-based pricing system that fluctuates based on day/phase/special events.",
       "status": "Planned"
     },
     {
