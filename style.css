@@ -1,4 +1,26 @@
+/* Original hover effect */
 section:hover {
   transform: translateY(-4px);
   transition: transform 0.2s ease-in-out;
+}
+
+/* Fantasy Theme Additions for blog.html */
+.fantasy-scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Additional responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .fantasy-card {
+    padding: 1.5rem !important;
+  }
+  
+  .chapter-content {
+    font-size: 1rem !important;
+    line-height: 1.9 !important;
+  }
+  
+  .fantasy-title {
+    font-size: 1.8rem !important;
+  }
 }
