@@ -2,362 +2,391 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chapters - Project: ATLAS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css">
-  <!-- PDF.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <style>
-    /* Fantasy Theme Overrides */
-    .fantasy-card {
-      background: linear-gradient(135deg, rgba(45, 35, 55, 0.95) 0%, rgba(35, 25, 45, 0.95) 100%);
-      border: 3px solid #8B6914;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      position: relative;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapters - Project: ATLAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        /* Fantasy Theme Overrides */
+        .fantasy-card {
+            background: linear-gradient(135deg, rgba(45, 35, 55, 0.95) 0%, rgba(35, 25, 45, 0.95) 100%);
+            border: 3px solid #8B6914;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
 
-    .fantasy-card::before {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
-      border: 1px solid #ffd700;
-      border-radius: 0.5rem;
-      pointer-events: none;
-    }
+        .fantasy-card::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid #ffd700;
+            border-radius: 0.5rem;
+            pointer-events: none;
+        }
 
-    .chapter-content {
-      font-family: 'Georgia', 'Garamond', serif;
-      font-size: 1.1rem;
-      line-height: 2;
-      color: #ffd4a3;
-      text-align: justify;
-    }
+        .chapter-content {
+            font-family: 'Georgia', 'Garamond', serif;
+            font-size: 1.1rem;
+            line-height: 2;
+            color: #ffd4a3;
+            text-align: justify;
+        }
 
-    .chapter-content p {
-      margin-bottom: 1.5rem;
-      text-indent: 2rem;
-    }
+        .chapter-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 2rem;
+        }
 
-    .chapter-content p:first-of-type {
-      text-indent: 0;
-    }
+        .chapter-content p:first-of-type {
+            text-indent: 0;
+        }
 
-    .chapter-content p:first-of-type::first-letter {
-      font-size: 3.5rem;
-      font-weight: bold;
-      float: left;
-      line-height: 1;
-      margin: 0.1rem 0.2rem 0 0;
-      color: #ffd700;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    }
+        .chapter-content p:first-of-type::first-letter {
+            font-size: 3.5rem;
+            font-weight: bold;
+            float: left;
+            line-height: 1;
+            margin: 0.1rem 0.2rem 0 0;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
 
-    .fantasy-title {
-      color: #ffd700;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-      letter-spacing: 1px;
-    }
+        .fantasy-title {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 1px;
+        }
 
-    .fantasy-border {
-      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    }
+        .fantasy-border {
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
 
-    .fantasy-button {
-      background: linear-gradient(135deg, rgba(139, 105, 20, 0.8) 0%, rgba(184, 134, 11, 0.8) 100%);
-      border: 2px solid #ffd700;
-      color: #ffd4a3;
-      transition: all 0.3s ease;
-    }
+        .fantasy-button {
+            background: linear-gradient(135deg, rgba(139, 105, 20, 0.8) 0%, rgba(184, 134, 11, 0.8) 100%);
+            border: 2px solid #ffd700;
+            color: #ffd4a3;
+            transition: all 0.3s ease;
+        }
 
-    .fantasy-button:hover:not(:disabled) {
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.9) 0%, rgba(218, 165, 32, 0.9) 100%);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-      transform: translateY(-2px);
-    }
+        .fantasy-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(184, 134, 11, 0.9) 0%, rgba(218, 165, 32, 0.9) 100%);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+        }
 
-    .fantasy-button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+        .fantasy-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
-    .loading-spinner {
-      border: 3px solid rgba(255, 215, 0, 0.3);
-      border-top: 3px solid #ffd700;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
+        .loading-spinner {
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
 
-    .scene-break {
-      text-align: center;
-      margin: 2.5rem 0;
-      color: #ffd700;
-      font-size: 1.5rem;
-      letter-spacing: 1rem;
-    }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
-    /* Custom Scrollbar */
-    .chapter-content::-webkit-scrollbar {
-      width: 12px;
-    }
+        .scene-break {
+            text-align: center;
+            margin: 2.5rem 0;
+            color: #ffd700;
+            font-size: 1.5rem;
+            letter-spacing: 1rem;
+        }
 
-    .chapter-content::-webkit-scrollbar-track {
-      background: #1a1420;
-    }
+        /* Custom Scrollbar */
+        .chapter-content::-webkit-scrollbar {
+            width: 12px;
+        }
 
-    .chapter-content::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #8B6914 0%, #ffd700 100%);
-      border-radius: 6px;
-    }
+        .chapter-content::-webkit-scrollbar-track {
+            background: #1a1420;
+        }
 
-    .chapter-content::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #ffd700 0%, #8B6914 100%);
-    }
-  </style>
+        .chapter-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8B6914 0%, #ffd700 100%);
+            border-radius: 6px;
+        }
+
+        .chapter-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #ffd700 0%, #8B6914 100%);
+        }
+    </style>
 </head>
 
 <body class="bg-gray-900 text-gray-100 font-sans">
 
-  <!-- Navigation bar -->
-  <nav class="bg-gray-800 py-4">
-    <div class="max-w-7xl mx-auto flex justify-center space-x-6">
-      <a href="index.html" class="text-gray-300 hover:text-white font-semibold">Home</a>
-      <a href="secret.html" class="text-gray-300 hover:text-white font-semibold">Private</a>
-      <a href="blog.html" class="text-gray-300 hover:text-white font-semibold">Chapters</a>
+    <!-- Navigation bar -->
+    <nav class="bg-gray-800 py-4">
+        <div class="max-w-7xl mx-auto flex justify-center space-x-6">
+            <a href="index.html" class="text-gray-300 hover:text-white font-semibold">Home</a>
+            <a href="secret.html" class="text-gray-300 hover:text-white font-semibold">Private</a>
+            <a href="blog.html" class="text-gray-300 hover:text-white font-semibold">Chapters</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="text-center py-10">
+        <h1 class="text-4xl font-bold fantasy-title mb-2">Chronicles of Sylvania</h1>
+        <p class="text-gray-400">Weekly chapter releases from A Journey's End</p>
+    </header>
+
+    <!-- Chapter Selection -->
+    <div class="max-w-4xl mx-auto px-4 mb-6">
+        <div class="fantasy-card rounded-2xl p-6">
+            <h2 class="text-xl font-semibold fantasy-title mb-4">Chapter Selection</h2>
+            <select id="chapter-select"
+                class="w-full px-4 py-2 rounded bg-gray-800 text-gray-100 border-2 border-gray-700 focus:border-blue-400 focus:outline-none">
+                <option value="">Select a chapter...</option>
+            </select>
+        </div>
     </div>
-  </nav>
 
-  <!-- Header -->
-  <header class="text-center py-10">
-    <h1 class="text-4xl font-bold fantasy-title mb-2">Chronicles of Sylvania</h1>
-    <p class="text-gray-400">Weekly chapter releases from A Journey's End</p>
-  </header>
-
-  <!-- Chapter Selection -->
-  <div class="max-w-4xl mx-auto px-4 mb-6">
-    <div class="fantasy-card rounded-2xl p-6">
-      <h2 class="text-xl font-semibold fantasy-title mb-4">Chapter Selection</h2>
-      <select id="chapter-select" class="w-full px-4 py-2 rounded bg-gray-800 text-gray-100 border-2 border-gray-700 focus:border-blue-400 focus:outline-none">
-        <option value="">Select a chapter...</option>
-      </select>
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="hidden flex justify-center items-center py-10">
+        <div class="loading-spinner"></div>
     </div>
-  </div>
 
-  <!-- Loading Indicator -->
-  <div id="loading-indicator" class="hidden flex justify-center items-center py-10">
-    <div class="loading-spinner"></div>
-  </div>
-
-  <!-- Error Message -->
-  <div id="error-message" class="hidden max-w-4xl mx-auto px-4 mb-6">
-    <div class="bg-red-900 border-2 border-red-600 rounded-lg p-4 text-center">
-      <p class="text-red-200" id="error-text"></p>
+    <!-- Error Message -->
+    <div id="error-message" class="hidden max-w-4xl mx-auto px-4 mb-6">
+        <div class="bg-red-900 border-2 border-red-600 rounded-lg p-4 text-center">
+            <p class="text-red-200" id="error-text"></p>
+        </div>
     </div>
-  </div>
 
-  <!-- Chapter Display -->
-  <main id="chapter-container" class="max-w-4xl mx-auto px-4 pb-20">
-    <!-- Chapter content will load here -->
-  </main>
+    <!-- Chapter Display -->
+    <main id="chapter-container" class="max-w-4xl mx-auto px-4 pb-20">
+        <!-- Chapter content will load here -->
+    </main>
 
-  <footer class="text-center text-gray-500 py-6 text-sm">
-    © 2025 SB Game Studios – All Rights Reserved
-  </footer>
+    <footer class="text-center text-gray-500 py-6 text-sm">
+        © 2025 SB Game Studios – All Rights Reserved
+    </footer>
 
-  <script>
-    // Configure PDF.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // Chapter list configuration - add new chapters here
-    const chapters = [
-      { filename: 'CHAPTER 1 - THE LAST MORNING AWAKENING IN ELSEWHERE.pdf', title: 'Chapter 1: The Last Morning / Awakening in Elsewhere' }
-      // Add more chapters here as you release them:
-      // { filename: 'CHAPTER 2 - TITLE.pdf', title: 'Chapter 2: Title' },
-    ];
+        // Chapter list configuration - add new chapters here
+        const chapters = [
+            { filename: 'CHAPTER 1 - THE LAST MORNING AWAKENING IN ELSEWHERE.pdf', title: 'Chapter 1: The Last Morning / Awakening in Elsewhere' }
+            // Add more chapters here as you release them:
+            // { filename: 'CHAPTER 2 - TITLE.pdf', title: 'Chapter 2: Title' },
+        ];
 
-    // Populate chapter dropdown
-    function populateChapterSelect() {
-      const select = document.getElementById('chapter-select');
-      chapters.forEach((chapter, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = chapter.title;
-        select.appendChild(option);
-      });
+        // Populate chapter dropdown
+        function populateChapterSelect() {
+            const select = document.getElementById('chapter-select');
+            chapters.forEach((chapter, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = chapter.title;
+                select.appendChild(option);
+            });
 
-      // Auto-load first chapter if available
-      if (chapters.length > 0) {
-        select.value = 0;
-        loadChapter(0);
-      }
-    }
-
-    // Show/hide loading indicator
-    function setLoading(isLoading) {
-      const loader = document.getElementById('loading-indicator');
-      const container = document.getElementById('chapter-container');
-      if (isLoading) {
-        loader.classList.remove('hidden');
-        container.innerHTML = '';
-      } else {
-        loader.classList.add('hidden');
-      }
-    }
-
-    // Show error message
-    function showError(message) {
-      const errorDiv = document.getElementById('error-message');
-      const errorText = document.getElementById('error-text');
-      errorText.textContent = message;
-      errorDiv.classList.remove('hidden');
-      setTimeout(() => errorDiv.classList.add('hidden'), 5000);
-    }
-
-    // Load and display PDF chapter
-    async function loadChapter(index) {
-      if (index < 0 || index >= chapters.length) return;
-
-      const chapter = chapters[index];
-      setLoading(true);
-
-      try {
-        const pdfPath = `chapters/${chapter.filename}`;
-        const pdf = await pdfjsLib.getDocument(pdfPath).promise;
-        
-        // Extract text from all pages
-        let fullText = '';
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items.map(item => item.str).join(' ');
-          fullText += pageText + '\n\n';
+            // Auto-load first chapter if available
+            if (chapters.length > 0) {
+                select.value = 0;
+                loadChapter(0);
+            }
         }
 
-        // Display the chapter
-        displayChapter(chapter, fullText, index);
-        setLoading(false);
+        // Show/hide loading indicator
+        function setLoading(isLoading) {
+            const loader = document.getElementById('loading-indicator');
+            const container = document.getElementById('chapter-container');
+            if (isLoading) {
+                loader.classList.remove('hidden');
+                container.innerHTML = '';
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
 
-      } catch (error) {
-        console.error('Error loading PDF:', error);
-        showError(`Failed to load chapter. Please make sure the file "${chapter.filename}" exists in the chapters folder.`);
-        setLoading(false);
-      }
-    }
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+        }
 
-    // Display chapter content
-    function displayChapter(chapter, text, currentIndex) {
-      const container = document.getElementById('chapter-container');
-      
-      // Split text into paragraphs (you may need to adjust this based on your PDF formatting)
-      const paragraphs = text
-        .split('\n\n')
-        .map(p => p.trim())
-        .filter(p => p.length > 0);
+        // Load and display PDF chapter
+        async function loadChapter(index) {
+            if (index < 0 || index >= chapters.length) return;
 
-      // Create chapter card
-      const chapterCard = document.createElement('article');
-      chapterCard.className = 'fantasy-card rounded-2xl p-8 mb-6';
-      chapterCard.style.animation = 'fadeIn 0.6s ease-out';
+            const chapter = chapters[index];
+            setLoading(true);
 
-      // Chapter header
-      const header = document.createElement('div');
-      header.className = 'text-center mb-8 pb-6 fantasy-border';
-      header.innerHTML = `
+            try {
+                const pdfPath = `chapters/${chapter.filename}`;
+                const pdf = await pdfjsLib.getDocument(pdfPath).promise;
+
+                // Extract text from all pages
+                let fullText = '';
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n\n';
+                }
+
+                // Display the chapter
+                displayChapter(chapter, fullText, index);
+                setLoading(false);
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                showError(`Failed to load chapter. Please make sure the file "${chapter.filename}" exists in the chapters folder.`);
+                setLoading(false);
+            }
+        }
+
+        // Display chapter content
+        function displayChapter(chapter, text, currentIndex) {
+            const container = document.getElementById('chapter-container');
+
+            // Improved paragraph detection
+            let paragraphs = [];
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+            let currentParagraph = '';
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                // Skip page numbers and very short lines at start
+                if (line.length < 3 || /^\d+$/.test(line)) continue;
+
+                // Check if this line ends a sentence (ends with . ! ? or ")
+                if (line.match(/[.!?"]$/)) {
+                    currentParagraph += (currentParagraph ? ' ' : '') + line;
+                    if (currentParagraph.length > 50) {
+                        paragraphs.push(currentParagraph);
+                        currentParagraph = '';
+                    }
+                } else {
+                    // Continue building the paragraph
+                    currentParagraph += (currentParagraph ? ' ' : '') + line;
+                }
+            }
+
+            // Add any remaining paragraph
+            if (currentParagraph.length > 50) {
+                paragraphs.push(currentParagraph);
+            }
+
+            // Create chapter card
+            const chapterCard = document.createElement('article');
+            chapterCard.className = 'fantasy-card rounded-2xl p-8 mb-6';
+            chapterCard.style.animation = 'fadeIn 0.6s ease-out';
+
+            // Chapter header
+            const header = document.createElement('div');
+            header.className = 'text-center mb-8 pb-6 fantasy-border';
+            header.innerHTML = `
         <div class="text-sm text-gray-400 uppercase tracking-widest mb-2">Chapter ${currentIndex + 1}</div>
         <h2 class="text-3xl font-bold fantasy-title mb-2">${chapter.title.replace(/^CHAPTER \d+ - /, '')}</h2>
         <div class="text-sm text-blue-400 italic mt-2">Est. Reading Time: ${Math.ceil(text.split(' ').length / 200)} minutes</div>
       `;
-      chapterCard.appendChild(header);
+            chapterCard.appendChild(header);
 
-      // Chapter content
-      const content = document.createElement('div');
-      content.className = 'chapter-content';
-      
-      paragraphs.forEach((para, index) => {
-        // Skip very short paragraphs (likely headers or formatting artifacts)
-        if (para.length < 20 && index > 0) {
-          // Could be a scene break
-          const sceneBreak = document.createElement('div');
-          sceneBreak.className = 'scene-break';
-          sceneBreak.textContent = '⚔ ⚔ ⚔';
-          content.appendChild(sceneBreak);
-        } else {
-          const p = document.createElement('p');
-          p.textContent = para;
-          content.appendChild(p);
+            // Chapter content
+            const content = document.createElement('div');
+            content.className = 'chapter-content';
+
+            paragraphs.forEach((para, index) => {
+                // Skip very short paragraphs (likely headers or formatting artifacts)
+                if (para.length < 20 && index > 0) {
+                    // Could be a scene break
+                    const sceneBreak = document.createElement('div');
+                    sceneBreak.className = 'scene-break';
+                    sceneBreak.textContent = '⚔ ⚔ ⚔';
+                    content.appendChild(sceneBreak);
+                } else {
+                    const p = document.createElement('p');
+                    p.textContent = para;
+                    content.appendChild(p);
+                }
+            });
+
+            chapterCard.appendChild(content);
+
+            // Navigation
+            const nav = document.createElement('nav');
+            nav.className = 'flex justify-between items-center mt-8 pt-6 fantasy-border';
+
+            const prevButton = document.createElement('button');
+            prevButton.className = 'fantasy-button px-6 py-2 rounded font-semibold uppercase text-sm tracking-wide';
+            prevButton.textContent = '← Previous';
+            prevButton.disabled = currentIndex === 0;
+            prevButton.onclick = () => {
+                document.getElementById('chapter-select').value = currentIndex - 1;
+                loadChapter(currentIndex - 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const indexLink = document.createElement('a');
+            indexLink.href = '#';
+            indexLink.className = 'text-blue-400 hover:text-blue-300 font-semibold';
+            indexLink.textContent = 'Chapter Index';
+            indexLink.onclick = (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const nextButton = document.createElement('button');
+            nextButton.className = 'fantasy-button px-6 py-2 rounded font-semibold uppercase text-sm tracking-wide';
+            nextButton.textContent = 'Next →';
+            nextButton.disabled = currentIndex === chapters.length - 1;
+            nextButton.onclick = () => {
+                document.getElementById('chapter-select').value = currentIndex + 1;
+                loadChapter(currentIndex + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            nav.appendChild(prevButton);
+            nav.appendChild(indexLink);
+            nav.appendChild(nextButton);
+            chapterCard.appendChild(nav);
+
+            container.innerHTML = '';
+            container.appendChild(chapterCard);
         }
-      });
-      
-      chapterCard.appendChild(content);
 
-      // Navigation
-      const nav = document.createElement('nav');
-      nav.className = 'flex justify-between items-center mt-8 pt-6 fantasy-border';
-      
-      const prevButton = document.createElement('button');
-      prevButton.className = 'fantasy-button px-6 py-2 rounded font-semibold uppercase text-sm tracking-wide';
-      prevButton.textContent = '← Previous';
-      prevButton.disabled = currentIndex === 0;
-      prevButton.onclick = () => {
-        document.getElementById('chapter-select').value = currentIndex - 1;
-        loadChapter(currentIndex - 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
+        // Chapter select change handler
+        document.getElementById('chapter-select').addEventListener('change', (e) => {
+            const index = parseInt(e.target.value);
+            if (!isNaN(index)) {
+                loadChapter(index);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
 
-      const indexLink = document.createElement('a');
-      indexLink.href = '#';
-      indexLink.className = 'text-blue-400 hover:text-blue-300 font-semibold';
-      indexLink.textContent = 'Chapter Index';
-      indexLink.onclick = (e) => {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
+        // Initialize on page load
+        populateChapterSelect();
 
-      const nextButton = document.createElement('button');
-      nextButton.className = 'fantasy-button px-6 py-2 rounded font-semibold uppercase text-sm tracking-wide';
-      nextButton.textContent = 'Next →';
-      nextButton.disabled = currentIndex === chapters.length - 1;
-      nextButton.onclick = () => {
-        document.getElementById('chapter-select').value = currentIndex + 1;
-        loadChapter(currentIndex + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-
-      nav.appendChild(prevButton);
-      nav.appendChild(indexLink);
-      nav.appendChild(nextButton);
-      chapterCard.appendChild(nav);
-
-      container.innerHTML = '';
-      container.appendChild(chapterCard);
-    }
-
-    // Chapter select change handler
-    document.getElementById('chapter-select').addEventListener('change', (e) => {
-      const index = parseInt(e.target.value);
-      if (!isNaN(index)) {
-        loadChapter(index);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-
-    // Initialize on page load
-    populateChapterSelect();
-
-    // Add fadeIn animation
-    const style = document.createElement('style');
-    style.textContent = `
+        // Add fadeIn animation
+        const style = document.createElement('style');
+        style.textContent = `
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -369,8 +398,8 @@
         }
       }
     `;
-    document.head.appendChild(style);
-  </script>
+        document.head.appendChild(style);
+    </script>
 
 </body>
 
