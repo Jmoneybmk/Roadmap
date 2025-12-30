@@ -28,31 +28,46 @@
   ],
   "NOVEMBER 2025": [
     {
-      "title": "Quest Plugin Review & Enhancement",
-      "description": "Testing and improving existing quest tracking system.",
-      "status": "In-Progress"
-    },
-    {
       "title": "Equipment Augmentation System",
-      "description": "Gem/rune socketing system for custom gear enhancement.",
-      "status": "In-Progress"
-    },
-    {
-      "title": "Actor to Enemy Conversion",
-      "description": "Full conversion system with AI, stats and skill.",
+      "description": "Gem/rune socketing system for custom gear enhancement with universal slots and stat bonuses.",
       "status": "Completed"
     },
     {
-      "title": "Scan-System",
+      "title": "Actor to Enemy Conversion",
+      "description": "Full conversion system with AI, stats and skill preservation including mid-battle conversions.",
+      "status": "Completed"
+    },
+    {
+      "title": "Scan System",
       "description": "Permanent enemy scanning with HP bars, Buff and Debuffs status info.",
+      "status": "Completed"
+    },
+    {
+      "title": "Dynamic Shop Prices",
+      "description": "Special events integration with reputation and event-based discount stacking for time-based pricing.",
       "status": "Completed"
     }
   ],
   "DECEMBER 2025": [
     {
-      "title": "Dynamic Shop Prices",
-      "description": "Time-based pricing system that fluctuates based on day/phase/special events.",
-      "status": "Planned"
+      "title": "Recipe Teaching System",
+      "description": "NPC-based recipe unlocking system with gold costs, workstation filtering, and category organization.",
+      "status": "Completed"
+    },
+    {
+      "title": "Blacksmith Crafting Recipes (Level 1-3)",
+      "description": "13 craftable equipment pieces including weapons, armor, shields, and magic equipment with proper material costs.",
+      "status": "Completed"
+    },
+    {
+      "title": "Guild Hall Expansion",
+      "description": "Added Kitchen, Supply Room, Sleeping Quarters, Blacksmith, and Dining Hall with NPCs (Ayla, Elias, Kaine) and dynamic features.",
+      "status": "Completed"
+    },
+    {
+      "title": "Quest Plugin Review & Enhancement",
+      "description": "Testing and improving existing quest tracking system with potential new features.",
+      "status": "In-Progress"
     },
     {
       "title": "Enemy Stat Rebalance",
