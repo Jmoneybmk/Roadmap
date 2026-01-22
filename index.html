@@ -1,43 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project: ATLAS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Anime Debate Game Board</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body class="bg-gray-900 text-gray-100 font-sans">
+<body>
+    <header class="app-header">
+        <div class="title-block">
+            <h1 id="pageTitle">Anime Debate — Game Board</h1>
+            <div class="sub">Prompt + Options + Modifiers + Scoreboard (Local)</div>
+        </div>
 
-  <!-- Navigation bar -->
-  <nav class="bg-gray-800 py-4">
-    <div class="max-w-7xl mx-auto flex justify-center space-x-6">
-      <a href="index.html" class="text-gray-300 hover:text-white font-semibold">Home</a>
-      <a href="secret.html" class="text-gray-300 hover:text-white font-semibold">Private</a>
-      <a href="blog.html" class="text-gray-300 hover:text-white font-semibold">Chapters</a>
-    </div>
-  </nav>
+        <div class="topbar-pack">
+            <label for="packSelect" class="muted">Pack:</label>
+            <select id="packSelect"></select>
+        </div>
 
-  <!-- Header -->
-  <header class="text-center py-10">
-    <h1 class="text-4xl font-bold text-white mb-2">Project: ATLAS Development's Roadmap</h1>
-    <p class="text-gray-400">Welcome to our Journey! Please keep in mind this roadmap is subject to change at any time
-      without prior notice!</p>
-  </header>
+        <div class="status-block">
+            <div class="pill">Round: <span id="roundNow">1</span> / <span id="roundMax">10</span></div>
+            <div class="pill">Prompts Left: <span id="promptsLeft">0</span></div>
+            <div class="pill">Chars Left: <span id="charsLeft">0</span></div>
+            <div class="pill">Mods Left: <span id="modsLeft">0</span></div>
+        </div>
+    </header>
 
-  <!-- Main content -->
-  <main id="roadmap-container"
-    class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-    <!-- Roadmap sections will load here -->
-  </main>
+    <main class="layout">
+        <!-- Left: Controls + Players -->
+        <aside class="panel">
+            <section class="card">
+                <h2>Controls</h2>
 
-  <footer class="text-center text-gray-500 py-6 text-sm">
-    © 2025 SB Game Studios — All Rights Reserved
-  </footer>
+                <div class="btn-grid">
+                    <button id="btnGenerate" class="btn primary">Generate Round</button>
+                    <button id="btnLock" class="btn">Lock Picks</button>
+                    <button id="btnRevealMod" class="btn warn">Reveal Modifier</button>
+                    <button id="btnNext" class="btn success">Next Round</button>
+                    <button id="btnCheckWinner" class="btn">Check Winner</button>
+                </div>
 
-  <script src="script.js"></script>
+                <div class="btn-grid">
+                    <button id="btnRestart" class="btn danger">Restart Game</button>
+                    <button id="btnClearUsed" class="btn">Clear Used Pools</button>
+                    <button id="btnResetScores" class="btn">Reset Scores</button>
+                    <button id="btnClearBoard" class="btn">Clear Board</button>
+                </div>
+
+                <div class="hint" id="hintBox"></div>
+            </section>
+
+            <section class="card">
+                <h2>Players</h2>
+                <div class="players" id="players"></div>
+                <div class="small-note">
+                    Tip: Leave a name blank to “disable” a player slot.
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Used Pools</h2>
+                <div class="used-grid">
+                    <div>
+                        <div class="label">Used Prompts</div>
+                        <div class="count" id="usedPromptsCount">0</div>
+                    </div>
+                    <div>
+                        <div class="label">Used Characters</div>
+                        <div class="count" id="usedCharsCount">0</div>
+                    </div>
+                    <div>
+                        <div class="label">Used Modifiers</div>
+                        <div class="count" id="usedModsCount">0</div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Center: Board -->
+        <section class="board">
+            <section class="card board-card">
+                <div class="board-top">
+                    <div class="board-title">Prompt</div>
+                    <div class="board-meta" id="boardMeta"></div>
+                </div>
+
+                <div class="prompt">
+                    <div class="prompt-left">
+                        <div class="prompt-text" id="promptText">Click <b>Generate Round</b> to start.</div>
+                    </div>
+
+                    <div class="prompt-right">
+                        <div class="prompt-info">
+                            <div class="prompt-source" id="promptSource"></div>
+                            <div class="prompt-expl" id="promptExpl"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modifier-box" id="modifierBox">
+                    <div class="modifier-title">Modifier</div>
+                    <div class="modifier-text" id="modifierText">No modifier revealed.</div>
+                </div>
+
+                <div class="options">
+                    <div class="options-title">Character Options</div>
+                    <div class="options-grid" id="optionsGrid"></div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div>State autosaves locally in your browser (LocalStorage).</div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
