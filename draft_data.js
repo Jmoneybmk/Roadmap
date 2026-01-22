@@ -1,287 +1,32 @@
-// data.js
-// Pack-based data structure.
-// Each pack contains: prompts[], characters[], modifiers[]
-// Add new content by selecting a pack and filling its arrays.
+// draft_data.js
+// Separate mode: Team Draft Royale (does not share files with Prompt Debate mode).
 
-window.ANIME_DEBATE_DATA = {
-  maxRounds: 10,
+window.DRAFT_TEAM_DATA = {
+  defaultRounds: 5,
 
-  packs: {
-    // =========================================================
-    // ANIME PACK (ACTIVE)
-    // =========================================================
-    anime: {
-      label: "Anime",
+  roles: [
+    { id: 'captain', name: 'Captain', blurb: 'Last fighter; sets the strategic plan.' },
+    { id: 'vice', name: 'Vice Captain', blurb: 'All-rounder; can handle any role under pressure.' },
+    { id: 'tank', name: 'Tank', blurb: 'Draws aggro first 60 seconds; must endure focus.' },
+    { id: 'assassin', name: 'Assassin', blurb: 'Fights alone; thrives isolated.' },
+    { id: 'support', name: 'Support', blurb: 'Helps first (shield/heal/revive); fights second.' },
+  ],
 
-      modifiers: [
-        "No outside help allowed (no allies, summons, squads, backup).",
-        "No killing allowed (must succeed non-lethally).",
-        "No flying allowed.",
-        "They start injured (already damaged or exhausted).",
-        "They can only use one signature ability (pick ONE move/power style only).",
-        "They must protect one civilian the entire time.",
-        "No powers for the first 60 seconds (must survive the start with skill only).",
-        "They have 10 minutes prep time (quick planning, no long setups).",
-        "They must keep it secret (no public reveal, no announcing intentions).",
-        "Opponent adapts mid-way and the situation gets harder."
-      ],
+  modifiers: [
+    'No flying (any flight/levitation is disabled).',
+    'Powers/Magic sealed for the first 30 seconds.',
+    'The battle becomes a chess match between Captains (no direct combat).',
+    'Urban battlefield with civilians: collateral damage loses you the vote.',
+    'No killing allowed: incapacitation only.',
+    'Everyone fights 1v1 (Assassins shine; teams must regroup).',
+    'Captain and Support swap characters.',
+    'Captain and Support team up, Vice Captain and Tank team up, Assassin remain alone.',
+    'Support is targeted first (protect them or lose).',
+    'Everyone has to agree on removing/nullifying 1 role this round.',
+  ],
 
-      prompts: [
-        
-        {
-          id: 1, prompt: "This character can deliver an “Erwin’s Final Charge” level speech that makes soldiers ride into guaranteed death.",
-          source: "Attack on Titan — Erwin’s Final Charge",
-          explanation: "Recreate the exact stakes of Attack on Titan — Erwin’s Final Charge: your pick must deliver an “Erwin’s Final Charge” level speech that makes soldiers ride into guaranteed death. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 2, prompt: "This character can survive and pass the Hunter Exam and earn a Hunter License.",
-          source: "Hunter x Hunter — Hunter Exam Arc",
-          explanation: "Recreate the exact stakes of Hunter x Hunter — Hunter Exam Arc: your pick must survive and pass the Hunter Exam and earn a Hunter License. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 3, prompt: "This character can successfully pull off Lelouch’s “Zero Requiem” and make the world unite through their own sacrifice.",
-          source: "Code Geass — Zero Requiem",
-          explanation: "Recreate the exact stakes of Code Geass — Zero Requiem: your pick must successfully pull off Lelouch’s “Zero Requiem” and make the world unite through their own sacrifice. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 4, prompt: "This character can win Duelist Kingdom and defeat Pegasus.",
-          source: "Yu-Gi-Oh! — Duelist Kingdom Arc",
-          explanation: "Recreate the exact stakes of Yu-Gi-Oh! — Duelist Kingdom Arc: your pick must win Duelist Kingdom and defeat Pegasus. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 5, prompt: "This character can clear the Forest of Death and retrieve the correct scroll without their team getting wiped.",
-          source: "Naruto — Chūnin Exams: Forest of Death",
-          explanation: "Recreate the exact stakes of Naruto — Chūnin Exams: Forest of Death: your pick must clear the Forest of Death and retrieve the correct scroll without their team getting wiped. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 6, prompt: "This character can win the Cell Games and stop Cell from destroying Earth.",
-          source: "Dragon Ball Z — Cell Games Saga",
-          explanation: "Recreate the exact stakes of Dragon Ball Z — Cell Games Saga: your pick must win the Cell Games and stop Cell from destroying Earth. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 7, prompt: "This character can complete Ainz’s “Lizardmen Arc” conquest without unnecessary slaughter and still secure control.",
-          source: "Overlord — Lizardmen Heroes Arc",
-          explanation: "Recreate the exact stakes of Overlord — Lizardmen Heroes Arc: your pick must complete Ainz’s “Lizardmen Arc” conquest without unnecessary slaughter and still secure control. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 8, prompt: "This character can win a Shokugeki cooking duel against Soma Yukihira.",
-          source: "Food Wars! Shokugeki no Soma — Shokugeki Battles",
-          explanation: "Recreate the exact stakes of Food Wars! Shokugeki no Soma — Shokugeki Battles: your pick must win a Shokugeki cooking duel against Soma Yukihira. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 9, prompt: "This character can pull off the Ocean’s Eleven casino vault heist successfully.",
-          source: "Ocean’s Eleven — Casino Vault Heist",
-          explanation: "Recreate the exact stakes of Ocean’s Eleven — Casino Vault Heist: your pick must pull off the Ocean’s Eleven casino vault heist successfully. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 10, prompt: "This character can execute the Grace Field House escape plan and get the kids out successfully.",
-          source: "The Promised Neverland — Grace Field House Escape",
-          explanation: "Recreate the exact stakes of The Promised Neverland — Grace Field House Escape: your pick must execute the Grace Field House escape plan and get the kids out successfully. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 11, prompt: "This character can win the Dark Tournament and keep their team alive to the end.",
-          source: "Yu Yu Hakusho — Dark Tournament",
-          explanation: "Recreate the exact stakes of Yu Yu Hakusho — Dark Tournament: your pick must win the Dark Tournament and keep their team alive to the end. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 12, prompt: "This character can survive Subaru’s Return-by-Death psychological pressure without mentally breaking.",
-          source: "Re:Zero — Return by Death Loops",
-          explanation: "Recreate the exact stakes of Re:Zero — Return by Death Loops: your pick must survive Subaru’s Return-by-Death psychological pressure without mentally breaking. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 13, prompt: "This character can expose the corrupt government in FMAB without getting eliminated first.",
-          source: "Fullmetal Alchemist: Brotherhood — Central Conspiracy",
-          explanation: "Recreate the exact stakes of Fullmetal Alchemist: Brotherhood — Central Conspiracy: your pick must expose the corrupt government in FMAB without getting eliminated first. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 14, prompt: "This character can win the Royal Knights Selection Tournament without using lethal force.",
-          source: "Black Clover — Royal Knights Selection Exam",
-          explanation: "Recreate the exact stakes of Black Clover — Royal Knights Selection Exam: your pick must win the Royal Knights Selection Tournament without using lethal force. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 15, prompt: "This character can negotiate peace between Marley and Paradis without triggering more war.",
-          source: "Attack on Titan — Marley/Paradis Conflict",
-          explanation: "Recreate the exact stakes of Attack on Titan — Marley/Paradis Conflict: your pick must negotiate peace between Marley and Paradis without triggering more war. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 16, prompt: "This character can successfully run Nazarick’s public image without exposing the truth.",
-          source: "Overlord — Sorcerer Kingdom Politics",
-          explanation: "Recreate the exact stakes of Overlord — Sorcerer Kingdom Politics: your pick must successfully run Nazarick’s public image without exposing the truth. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 17, prompt: "This character can survive the Shibuya Incident and still accomplish the mission.",
-          source: "Jujutsu Kaisen — Shibuya Incident",
-          explanation: "Recreate the exact stakes of Jujutsu Kaisen — Shibuya Incident: your pick must survive the Shibuya Incident and still accomplish the mission. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 18, prompt: "This character can win the Grand Magic Games and keep their guild’s reputation intact.",
-          source: "Fairy Tail — Grand Magic Games",
-          explanation: "Recreate the exact stakes of Fairy Tail — Grand Magic Games: your pick must win the Grand Magic Games and keep their guild’s reputation intact. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 19, prompt: "This character can stop the Paranormal Liberation War from escalating into full collapse.",
-          source: "My Hero Academia — Paranormal Liberation War",
-          explanation: "Recreate the exact stakes of My Hero Academia — Paranormal Liberation War: your pick must stop the Paranormal Liberation War from escalating into full collapse. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 20, prompt: "This character can keep a perfect fake identity inside a hostile organization for 30 days.",
-          source: "Tokyo Revengers — Gang Infiltration Tension",
-          explanation: "Recreate the exact stakes of Tokyo Revengers — Gang Infiltration Tension: your pick must keep a perfect fake identity inside a hostile organization for 30 days. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 21, prompt: "This character can keep their humanity intact after a life-changing transformation and still function normally.",
-          source: "Parasyte: The Maxim — Shinichi’s Transformation",
-          explanation: "Recreate the exact stakes of Parasyte: The Maxim — Shinichi’s Transformation: your pick must keep their humanity intact after a life-changing transformation and still function normally. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 22, prompt: "This character can build a trade empire from nothing without triggering a war.",
-          source: "Tsukimichi: Moonlit Fantasy — Kuzunoha Company",
-          explanation: "Recreate the exact stakes of Tsukimichi: Moonlit Fantasy — Kuzunoha Company: your pick must build a trade empire from nothing without triggering a war. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 23, prompt: "This character can survive being targeted by a top-tier assassin and still complete their mission.",
-          source: "The World’s Finest Assassin — Assassin World Rules",
-          explanation: "Recreate the exact stakes of The World’s Finest Assassin — Assassin World Rules: your pick must survive being targeted by a top-tier assassin and still complete their mission. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 24, prompt: "This character can win a battle royale where alliances constantly shift and still come out on top.",
-          source: "Dragon Ball Super — Tournament of Power",
-          explanation: "Recreate the exact stakes of Dragon Ball Super — Tournament of Power: your pick must win a battle royale where alliances constantly shift and still come out on top. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 25, prompt: "This character can lead a squad to victory while hiding a massive secret from their own team.",
-          source: "Seraph of the End — Military Secrets",
-          explanation: "Recreate the exact stakes of Seraph of the End — Military Secrets: your pick must lead a squad to victory while hiding a massive secret from their own team. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 26, prompt: "This character can take control of an underdog team and win through pure preparation and manipulation.",
-          source: "Classroom of the Elite — Class Battles",
-          explanation: "Recreate the exact stakes of Classroom of the Elite — Class Battles: your pick must take control of an underdog team and win through pure preparation and manipulation. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 27, prompt: "This character can prevent a major betrayal inside their organization before it destroys everything.",
-          source: "Code Geass — Internal Betrayal & Power Plays",
-          explanation: "Recreate the exact stakes of Code Geass — Internal Betrayal & Power Plays: your pick must prevent a major betrayal inside their organization before it destroys everything. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 28, prompt: "This character can win a high-stakes cooking duel using creativity alone (no perfect technique carry).",
-          source: "Food Wars! — Shokugeki Battles",
-          explanation: "Recreate the exact stakes of Food Wars! — Shokugeki Battles: your pick must win a high-stakes cooking duel using creativity alone (no perfect technique carry). It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 29, prompt: "This character can survive a city-wide monster outbreak and still keep civilians organized.",
-          source: "Kaiju No. 8 — Kaiju Disaster Response",
-          explanation: "Recreate the exact stakes of Kaiju No. 8 — Kaiju Disaster Response: your pick must survive a city-wide monster outbreak and still keep civilians organized. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 30, prompt: "This character can stop a powerful villain’s ideology from spreading and radicalizing the public.",
-          source: "My Hero Academia — Society & Ideology Fallout",
-          explanation: "Recreate the exact stakes of My Hero Academia — Society & Ideology Fallout: your pick must stop a powerful villain’s ideology from spreading and radicalizing the public. It’s not about raw power—success means the same kind of outcome happens under pressure (morale, timing, and consequences), not just a lucky moment or an off-screen shortcut."
-        },
-        {
-          id: 31, prompt: "This character can defeat the Ten Commandments.",
-          source: "Seven Deadly Sins — The Ten Commandments",
-          explanation: "The Ten Commandments are elite demon warriors with overwhelming raw power and curse-based abilities called Commandments that punish specific actions (like hatred or betrayal). To defeat them, a character needs absurd combat strength, endurance, resistance to hax/curse effects, and the ability to survive multiple high-tier threats at once."
-        },
-        {
-          id: 32, prompt: "This character can learn Nen.",
-          source: "Hunter x Hunter — Nen (Aura Technique)",
-          explanation: "Nen is a complex power system that requires intense training, discipline, and the ability to control life energy through techniques like Ten, Zetsu, Ren, and Hatsu. Learning Nen isn’t just about talent—it's about mental focus, adaptability, and surviving the physical strain and risk of aura backlash."
-        },
-        {
-          id: 33, prompt: "This character can convince the entire world to give Goku their energy for the Spirit Bomb.",
-          source: "Dragon Ball Z — Spirit Bomb (Genki Dama)",
-          explanation: "The Spirit Bomb requires living beings to willingly share a portion of their energy, meaning the user must gain trust fast on a global scale. This challenge is more about persuasion, charisma, reputation, and communication under pressure than combat."
-        },
-        {
-          id: 34, prompt: "This character can reach the 250th floor on Heaven's Arena.",
-          source: "Hunter x Hunter — Heaven's Arena",
-          explanation: "Heaven’s Arena is a brutal combat tower where opponents get stronger every floor, eventually forcing fighters to face Nen users and unpredictable matchups. Reaching the 250th floor means consistent wins, fast learning, physical durability, and the ability to adapt to opponents who may outclass you in skill or aura control."
-        },
-        {
-          id: 35, prompt: "This character can endure being tortured by Jason (Yamori) without breaking.",
-          source: "Tokyo Ghoul — Kaneki vs Jason Torture",
-          explanation: "Jason’s torture isn’t just physical—it’s psychological warfare designed to erase identity, willpower, and sanity through prolonged pain and hopelessness. Surviving without breaking means extreme mental resistance, emotional control, and the ability to cling to purpose even when your body and mind are being destroyed."
-        },
-        {
-          id: 36, prompt: "This character is unaffected by Estarossa's Commandment.",
-          source: "Seven Deadly Sins — Estarossa’s Commandment of Love",
-          explanation: "Estarossa’s Commandment punishes anyone who feels hatred in his presence by stripping them of the ability to fight, making aggression itself a weakness. Being unaffected means the character can fight with complete calm, no hatred, no malice—either through pure emotional control, unnatural mindset, or a nature that doesn’t rely on hostile intent."
-        },
-        {
-          id: 37, prompt: "This character will defend you even when you're wrong.",
-          source: "N/A — Loyalty & Ride-or-Die Energy",
-          explanation: "This isn’t about morality—this is about extreme loyalty. The character would back you publicly, argue your case, and protect you from consequences even if they know you're in the wrong, whether out of friendship, obsession, duty, or personal code."
-        },
-        {
-          id: 38, prompt: "This character can win Greed Island.",
-          source: "Hunter x Hunter — Greed Island",
-          explanation: "Greed Island is a deadly real-world game that requires fighting skill, Nen mastery, puzzle-solving, strategy, and collecting specific cards with strict conditions. Winning means surviving hostile players, understanding the game mechanics, building smart alliances, and completing the card requirements without getting hunted down."
-        },
-        {
-          id: 39, prompt: "This character can beat Igris.",
-          source: "Solo Leveling — Igris the Bloodred Commander",
-          explanation: "Igris is a high-speed, disciplined knight-class opponent with deadly swordsmanship, relentless pressure, and the ability to punish mistakes instantly. Beating him requires strong combat instincts, durability, speed, and the skill to win a high-difficulty duel where hesitation gets you killed."
-        },
-        {
-          id: 40, prompt: "This character's strategic mind rivals that of Shikamaru.",
-          source: "Naruto — Shikamaru’s Battle IQ",
-          explanation: "Shikamaru is known for elite tactical thinking, predicting enemy behavior, manipulating positioning, and turning weak situations into wins through planning. Matching him means the character can analyze quickly, stay calm under pressure, and create winning strategies using limited information and limited resources."
-        },
-        {
-          id: 41, prompt: "This character will do the ultimate sacrifice.",
-          source: "Dragon Ball Z — Final Sacrifice Moments",
-          explanation: "The ultimate sacrifice means giving up your life, future, or everything you value to protect others or secure victory, even when survival is possible. This tests a character’s courage, selflessness, and emotional strength—choosing duty over desire with zero hesitation."
-        },
-        {
-          id: 42, prompt: "This character can survive the Gate of Truth’s toll and still complete a human transmutation to bring someone back.",
-          source: "Fullmetal Alchemist: Brotherhood — Human Transmutation & The Truth",
-          explanation: "Human transmutation drags you before “Truth” and demands an equivalent-exchange toll (body parts, senses, years, etc.). Your character must pay that price, stay functional, and still complete the attempt so the result is a real restored person—not a failed shell or a botched creation."
-        },
-        {
-          id: 43, prompt: "This character can win Duelist Kingdom without cheating, rule-breaking mind games, or outside interference.",
-          source: "Yu-Gi-Oh! (Original) — Duelist Kingdom Tournament",
-          explanation: "Duelist Kingdom is messy, but you still have to win legitimate duels under pressure. Your pick must outplay multiple opponents back-to-back using strategy, reads, and adaptation—no hacks, no illegal rule abuse, and no outside help winning duels for them."
-        },
-        {
-          id: 44, prompt: "This character can keep Subaru alive through the Mansion Arc without knowing about Return by Death.",
-          source: "Re:Zero — Roswaal’s Mansion Arc (Early Loops)",
-          explanation: "In the early mansion loops, Subaru keeps dying from hidden causes plus mistrust and bad timing. Your character must protect him, build trust with the mansion staff, and identify the true trigger in time—without remembering loops or getting a reset after mistakes."
-        },
-        {
-          id: 45, prompt: "This character can win the Greed Island game and secure the victory condition without relying on brute force alone.",
-          source: "Hunter x Hunter — Greed Island Completion",
-          explanation: "Greed Island is a rule-and-resource game: cards, trading, alliances, scouting, and traps matter as much as fights. Your pick must collect what’s needed to clear the game while surviving other players hunting them—and do it through planning and adaptation, not just overpowering everyone."
-        },
-        {
-          id: 46, prompt: "This character can prevent a wave of copycat villains after the Stain incident by controlling the narrative and inspiring the right kind of heroism.",
-          source: "My Hero Academia — Hero Killer Stain Aftermath",
-          explanation: "Stain’s beliefs spread because the message sticks and people start copying it. Your character must blunt that ideological spread—shaping public perception, reducing recruitment/copycats, and redirecting frustration—without “just beat them up” being the whole solution."
-        },
-        {
-          id: 47, prompt: "This character can infiltrate the Great Tomb of Nazarick and escape with meaningful intel without triggering a full wipe.",
-          source: "Overlord — Nazarick’s Lethal Defense & Information Control",
-          explanation: "Nazarick is designed to erase intruders with traps, guardians, and constant monitoring. Your pick must get in, learn something valuable (layout, guardians, goals, weaknesses), and get out alive—without immediately provoking a response that wipes them on sight."
-        },
-        {
-          id: 48, prompt: "This character can keep Kaneki from losing himself during Jason (Yamori)’s torture by stabilizing him psychologically before the breaking point.",
-          source: "Tokyo Ghoul — Yamori Torture & Kaneki’s Break",
-          explanation: "Jason’s torture aims to break identity, not just cause pain. Your character must prevent Kaneki’s mental collapse—through rescue timing, psychological support, manipulation of Jason, or disruption—so Kaneki doesn’t hit the irreversible “snap” point."
-        },
-        {
-          id: 49, prompt: "This character can capture a dungeon and obtain a Djinn Metal Vessel without dying or being mentally broken by the trials.",
-          source: "Magi: The Labyrinth of Magic — Dungeon Capture",
-          explanation: "A dungeon capture is a gauntlet: monsters, puzzles, and judgment calls under extreme stress. Your pick must clear the dungeon, earn the Djinn’s contract, and come out functional—meaning they survive and keep their mind intact enough to actually use the Metal Vessel afterward."
-        },
-        {
-          id: 50, prompt: "This character can stop Kira before he identifies them—while operating in Kanto with only the same basic early-case info the task force had.",
-          source: "Death Note — Early Kira Investigation",
-          explanation: "Early on, investigators only know that deaths look supernatural and patterns exist; Kira adapts quickly. Your character must narrow in on Light fast enough to stop him without getting identified and written down—using deduction, operational security, and pressure before Kira learns their name/face."
-        },
-      ],
-
-      // Character pool: objects so we can display origin title on the board
-      characters: [
+  // Character pool objects: { name, anime }
+  characters: [
         
         // Dragon Ball
         { name: "Kid Goku", anime: "Dragon Ball" },
@@ -301,8 +46,8 @@ window.ANIME_DEBATE_DATA = {
         { name: "Frieza", anime: "Dragon Ball Z" },
         { name: "Cell", anime: "Dragon Ball Z" },
         { name: "Kid Buu", anime: "Dragon Ball Z" },
-        { name: "Goten", anime: "Dragon Ball Z" },
-        { name: "Trunks (Kid)", anime: "Dragon Ball Z" },
+        { name: "Hercules", anime: "Dragon Ball Z" },
+        { name: "Android 16", anime: "Dragon Ball Z" },
         { name: "Android 18", anime: "Dragon Ball Z" },
         { name: "Majin Vegeta", anime: "Dragon Ball Z" },
         { name: "Gotenks", anime: "Dragon Ball Z" },
@@ -321,6 +66,9 @@ window.ANIME_DEBATE_DATA = {
 
         // Dragon Ball Super
         { name: "Super Saiyan Blue Vegito", anime: "Dragon Ball Super" },
+        { name: "Super Saiyan Blue Gogeta", anime: "Dragon Ball Super" },
+        { name: "Goku", anime: "Dragon Ball Super" },
+        { name: "Vegeta", anime: "Dragon Ball Super" },
         { name: "Beerus", anime: "Dragon Ball Super" },
         { name: "Jiren", anime: "Dragon Ball Super" },
         { name: "Broly (DBS)", anime: "Dragon Ball Super" },
@@ -338,7 +86,7 @@ window.ANIME_DEBATE_DATA = {
         { name: "Kakashi Hatake (Part 1)", anime: "Naruto (Part 1)" },
         { name: "Orochimaru", anime: "Naruto (Part 1)" },
         { name: "Neji Hyuga", anime: "Naruto (Part 1)" },
-        { name: "Shikamaru Nara (Part 1)", anime: "Naruto (Part 1)" },
+        { name: "Kabuto", anime: "Naruto (Part 1)" },
         { name: "Jiraiya", anime: "Naruto (Part 1)" },
         { name: "Tsunade", anime: "Naruto (Part 1)" },
         { name: "Hiruzen Sarutobi", anime: "Naruto (Part 1)" },
@@ -354,6 +102,9 @@ window.ANIME_DEBATE_DATA = {
         { name: "Hashirama Senju", anime: "Naruto Shippuden" },
         { name: "Kaguya Otsutsuki", anime: "Naruto Shippuden" },
         { name: "Shikamaru Nara (Shippuden)", anime: "Naruto Shippuden" },
+        { name: "Naruto Uzumaki (Shippuden)", anime: "Naruto Shippuden" },
+        { name: "Sasuke Uchiha (Shippuden)", anime: "Naruto Shippuden" },
+        { name: "KAguya Otsutsuki", anime: "Naruto Shippuden" },
 
         // Attack on Titan
         { name: "Eren Yeager", anime: "Attack on Titan" },
@@ -895,73 +646,4 @@ window.ANIME_DEBATE_DATA = {
         { name: "Cynthia", anime: "Pokémon" },
         { name: "Giovanni", anime: "Pokémon" },
       ]
-    },
-
-    // =========================================================
-    // EMPTY PACK TEMPLATES (READY FOR FUTURE CONTENT)
-    // =========================================================
-    movies: {
-      label: "Movies",
-      modifiers: [],
-      prompts: [],
-      characters: [],
-      templates: {
-        modifier: "Example: Time limit is 24 hours.",
-        prompt: {
-          id: 1, prompt: "This character can survive the John Wick nightclub sequence and escape clean.",
-          source: "John Wick — Red Circle Club",
-          explanation: "A high-pressure action setpiece with stealth, gunfights, and quick decisions under chaos."
-        },
-        character: { name: "John Wick", anime: "John Wick" }
-      }
-    },
-
-    series: {
-      label: "Series",
-      modifiers: [],
-      prompts: [],
-      characters: [],
-      templates: {
-        modifier: "Example: Must do it without using violence.",
-        prompt: {
-          id: 1, prompt: "This character can uncover Hawkins Lab’s secrets without getting caught.",
-          source: "Stranger Things — Hawkins Lab Mystery",
-          explanation: "Investigation + stealth + survival against a powerful organization monitoring the town."
-        },
-        character: { name: "Eleven", anime: "Stranger Things" }
-      }
-    },
-
-    cartoons: {
-      label: "Cartoons",
-      modifiers: [],
-      prompts: [],
-      characters: [],
-      templates: {
-        modifier: "Example: No gadgets allowed.",
-        prompt: {
-          id: 1, prompt: "This character can solve a Gotham-level case before the villain strikes again.",
-          source: "Batman: The Animated Series — Detective Work",
-          explanation: "Requires deduction, interrogation, and piecing clues together under time pressure."
-        },
-        character: { name: "Batman", anime: "Batman: The Animated Series" }
-      }
-    },
-
-    anime_cartoon_movies: {
-      label: "Anime/Cartoon Movies",
-      modifiers: [],
-      prompts: [],
-      characters: [],
-      templates: {
-        modifier: "Example: They start with zero equipment.",
-        prompt: {
-          id: 1, prompt: "This character can survive a movie-scale disaster and still protect their allies.",
-          source: "Example Movie Pack — Disaster Scenario",
-          explanation: "Movie pacing: escalating threats, limited time, and big stakes with little room for mistakes."
-        },
-        character: { name: "Example Character", anime: "Example Movie Title" }
-      }
-    }
-  }
 };

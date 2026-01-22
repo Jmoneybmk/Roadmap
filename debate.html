@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Debate Mode — Cards</title>
+  <link rel="stylesheet" href="debate_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="index.html" title="Back to Main Menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">AD</div>
+        <div style="min-width:0">
+          <div class="title">Debate Cards</div>
+          <div class="subtitle" id="subtitleText">Prompt • Random options • Modifier rounds • Voting</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="pill">Phase: <b><span id="phasePill">Lobby</span></b></div>
+      <div class="pill">Round: <b><span id="roundNow">0</span></b>/<b><span id="roundMax">10</span></b></div>
+      <div class="pill">Prompts Left: <b><span id="promptsLeft">0</span></b></div>
+      <div class="pill">Chars Left: <b><span id="charsLeft">0</span></b></div>
+      <div class="pill">Mods Left: <b><span id="modsLeft">0</span></b></div>
+    </div>
+  </header>
+
+  <main class="layout debate-layout">
+    <!-- LEFT: CONTROLS + PLAYERS -->
+    <aside class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Controls</h2>
+          <p class="muted small">Run the round in phases for a cleaner flow.</p>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="btn-row">
+          <button class="btn primary" id="btnLobby">Lobby Setup</button>
+          <button class="btn" id="btnNewRound">New Round</button>
+          <button class="btn" id="btnLock">Lock Picks</button>
+          <button class="btn warning" id="btnReveal">Reveal Modifier</button>
+          <button class="btn" id="btnVoting">Start Voting</button>
+          <button class="btn" id="btnNext">Next Round</button>
+        </div>
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn" id="btnCheckWinner">Check Winner</button>
+          <button class="btn danger" id="btnRestart">Restart Game</button>
+          <button class="btn" id="btnClearUsed">Clear Used Pools</button>
+          <button class="btn" id="btnClearBoard">Clear Board</button>
+        </div>
+
+        <div class="hint" id="hintBox" style="margin-top:12px;">
+          Start with <b>Lobby Setup</b>, then <b>New Round</b>.
+        </div>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title">Players</h3>
+        <div class="players" id="playersWrap"></div>
+        <div class="muted small" style="margin-top:8px;">
+          Tip: Empty name = disabled slot (won’t appear in dropdowns or scoring).
+        </div>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title">Used Pools</h3>
+        <div class="used-grid">
+          <div class="chip">
+            <div class="muted small">Used Prompts</div>
+            <div class="big" id="usedPrompts">0</div>
+          </div>
+          <div class="chip">
+            <div class="muted small">Used Characters</div>
+            <div class="big" id="usedChars">0</div>
+          </div>
+          <div class="chip">
+            <div class="muted small">Used Modifiers</div>
+            <div class="big" id="usedMods">0</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: BOARD -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Board</h2>
+          <p class="muted small">Prompt + Source + Explanation + Options</p>
+        </div>
+        <div class="panel-actions">
+          <div class="pill" id="roundTypePill">Normal Round</div>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="promptwrap">
+          <div class="prompt-left">
+            <div class="prompt-text" id="promptText">Open <b>Lobby Setup</b> to begin.</div>
+          </div>
+
+          <div class="prompt-right">
+            <div class="prompt-source" id="promptSource">—</div>
+            <div class="prompt-expl" id="promptExpl">—</div>
+          </div>
+        </div>
+
+        <div class="modifier hide" id="modifierBox" style="margin-top:12px;">
+          <div class="modifier-title">MODIFIER</div>
+          <div class="modifier-text" id="modifierText">—</div>
+        </div>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title" style="margin:0;">Character Options</h3>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- LOBBY MODAL -->
+  <div class="modal-backdrop hidden" id="lobbyBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Lobby Setup</div>
+          <div class="muted small">Choose player count, names, rounds, and modifier frequency.</div>
+        </div>
+        <button class="btn" id="btnCloseLobby">Close</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="lobby-grid">
+          <div class="field">
+            <label>Players (2–8)</label>
+            <select id="lobbyPlayerCount" class="select"></select>
+          </div>
+
+          <div class="field">
+            <label>Rounds</label>
+            <input id="lobbyRounds" class="input" type="number" min="1" max="100" value="10" />
+          </div>
+
+          <div class="field">
+            <label>Modifier every _ rounds (0 = off)</label>
+            <input id="lobbyModEvery" class="input" type="number" min="0" max="20" value="3" />
+          </div>
+        </div>
+
+        <div class="section-split"></div>
+        <div class="names-grid" id="lobbyNames"></div>
+      </div>
+
+      <div class="modal-foot">
+        <div class="muted small" id="lobbyNote">Tip: You can rename players later from their cards.</div>
+        <button class="btn primary" id="btnStartGame">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOTING MODAL -->
+  <div class="modal-backdrop hidden" id="voteBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Voting</div>
+          <div class="muted small">Pick who won the round and award +1 point.</div>
+        </div>
+        <button class="btn" id="btnCloseVote">Close</button>
+      </div>
+
+      <div class="modal-body" id="voteBody"></div>
+
+      <div class="modal-foot">
+        <div class="muted small" id="voteHint">Tip: If a player slot is blank, they won’t show here.</div>
+        <button class="btn primary" id="btnAwardPoint">Award 1 Point</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

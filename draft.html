@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Team Draft Royale — Debate Board</title>
+  <link rel="stylesheet" href="draft_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="index.html" title="Back to Prompt Debate">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div>
+          <div class="title" id="pageTitle">Team Draft Royale</div>
+          <div class="subtitle">Draft teams, lock roles, tournament bracket, debate &amp; vote.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="pill" id="pillPhase">Phase: Lobby</div>
+      <div class="pill" id="pillRound">Round: 0/0</div>
+      <div class="pill" id="pillTurn">Turn: —</div>
+      <div class="pill" id="pillPick">Pick: —</div>
+      <div class="pill" id="pillMatch">Match: —</div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel" id="panelDraft">
+      <div class="panel-header">
+        <div>
+          <h2>Draft Board</h2>
+          <p class="muted" id="hint">Set up the lobby to begin.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn" id="btnNewRound">New Round</button>
+          <button class="btn" id="btnNextTurn">Next Turn</button>
+          <button class="btn danger" id="btnRestart">Restart Match</button>
+        </div>
+      </div>
+
+      <div class="modifier" id="modifierBox" aria-live="polite">
+        <div class="modifier-title">Modifier</div>
+        <div class="modifier-text" id="modifierText">—</div>
+      </div>
+
+      <!-- DRAFT PHASE: Character Selection -->
+      <div class="draft-grid" id="draftGrid">
+        <div class="choices">
+          <div class="choices-header">
+            <h3>4 Random Characters</h3>
+            <div class="choices-actions">
+              <button class="btn" id="btnReroll4">Reroll 4</button>
+            </div>
+          </div>
+          <div class="cards" id="cardGrid"></div>
+
+          <div class="pickbar">
+            <div class="pickbar-left">
+              <div class="picked" id="pickedSummary">Draft a character to continue.</div>
+              <div class="roles" id="roleButtons"></div>
+            </div>
+            <div class="pickbar-right">
+              <button class="btn primary" id="btnConfirmPick">Confirm Pick</button>
+              <button class="btn" id="btnSwap">Swap (2 filled slots)</button>
+            </div>
+          </div>
+
+          <div class="swapbox" id="swapBox">
+            <div class="swapbox-row">
+              <label>Swap Role A
+                <select id="swapRoleA"></select>
+              </label>
+              <label>Swap Role B
+                <select id="swapRoleB"></select>
+              </label>
+              <button class="btn" id="btnDoSwap">Do Swap</button>
+              <button class="btn" id="btnCancelSwap">Cancel</button>
+            </div>
+            <div class="muted">Swap can be used once per player, per round. Only between two filled roles.</div>
+          </div>
+        </div>
+
+        <div class="rules">
+          <h3>Role Guidance</h3>
+          <ul class="role-list">
+            <li><b>Captain</b>: last fighter; sets the strategic plan.</li>
+            <li><b>Vice Captain</b>: all‑rounder; can handle any role under pressure.</li>
+            <li><b>Tank</b>: draws aggro first 60 seconds; must endure focus.</li>
+            <li><b>Assassin</b>: fights alone; thrives isolated.</li>
+            <li><b>Support</b>: helps first (shield/heal/revive); fights second.</li>
+          </ul>
+
+          <h3>Phases</h3>
+          <ol class="muted">
+            <li>Draft (snake order)</li>
+            <li>Lock Teams</li>
+            <li>Tournament Bracket</li>
+            <li>Award Points → Next Round</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- TOURNAMENT PHASE: Bracket Display -->
+      <div class="tournament-zone" id="tournamentZone">
+        <div class="tournament-header">
+          <h3>🏆 Tournament Bracket</h3>
+          <p class="muted" id="tournamentHint">Debate which team wins each match. Winner gets 1 point!</p>
+        </div>
+
+        <!-- Current Match Display -->
+        <div class="current-match" id="currentMatch">
+          <div class="match-label" id="matchLabel">Match 1</div>
+          <div class="match-versus">
+            <button class="match-team" id="matchTeamA" type="button">
+              <div class="match-team-name" id="matchTeamAName">—</div>
+              <div class="match-team-roster" id="matchTeamARoster"></div>
+              <div class="match-team-votes" id="matchTeamAVotes">0 votes</div>
+            </button>
+            <div class="match-vs">VS</div>
+            <button class="match-team" id="matchTeamB" type="button">
+              <div class="match-team-name" id="matchTeamBName">—</div>
+              <div class="match-team-roster" id="matchTeamBRoster"></div>
+              <div class="match-team-votes" id="matchTeamBVotes">0 votes</div>
+            </button>
+          </div>
+          <div class="match-instructions">Click a team to vote for them!</div>
+          <div class="match-confirm">
+            <button class="btn primary" id="btnConfirmMatch">Confirm Winner</button>
+            <button class="btn" id="btnClearMatchVotes">Clear Votes</button>
+          </div>
+        </div>
+
+        <!-- Bye Notice -->
+        <div class="bye-notice" id="byeNotice">
+          <div class="bye-icon">🎫</div>
+          <div class="bye-text">
+            <span id="byePlayerName">—</span> receives a <b>BYE</b> and advances to the next round automatically!
+          </div>
+          <button class="btn primary" id="btnAcknowledgeBye">Continue</button>
+        </div>
+
+        <!-- Bracket Visualization -->
+        <div class="bracket-visual" id="bracketVisual">
+          <div class="bracket-title">Bracket Progress</div>
+          <div class="bracket-rounds" id="bracketRounds"></div>
+        </div>
+
+        <!-- Tournament Complete -->
+        <div class="tournament-complete" id="tournamentComplete">
+          <div class="champion-crown">👑</div>
+          <div class="champion-label">Round Champion</div>
+          <div class="champion-name" id="championName">—</div>
+          <div class="champion-sub" id="championSub">Earned the most points this round!</div>
+          <button class="btn primary" id="btnNextRoundFromTournament">Next Round</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" id="panelTeams">
+      <div class="panel-header">
+        <div>
+          <h2>Teams</h2>
+          <p class="muted">Scroll if needed (supports up to 8 players).</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn" id="btnLockAll">Lock All Teams</button>
+          <button class="btn" id="btnRevealModifier">Reveal Modifier</button>
+          <button class="btn" id="btnStartTournament">Start Tournament</button>
+        </div>
+      </div>
+      <div class="teams-grid" id="teamsGrid"></div>
+    </aside>
+  </main>
+
+  <div class="modal" id="lobbyModal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2>Lobby Setup</h2>
+      <p class="muted">Choose players, names, and modifier frequency.</p>
+
+      <div class="form-row">
+        <label>
+          Players (2–8)
+          <select id="playerCount">
+            <option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option>
+          </select>
+        </label>
+        <label>
+          Modifier frequency
+          <div class="inline">
+            <span>Every</span>
+            <input id="modEvery" type="number" min="0" max="99" value="3" />
+            <span>rounds (0 = off)</span>
+          </div>
+        </label>
+        <label>
+          Rounds to play
+          <input id="totalRounds" type="number" min="1" max="99" value="5" />
+        </label>
+      </div>
+
+      <div class="names" id="nameFields"></div>
+
+      <div class="modal-actions">
+        <button class="btn primary" id="btnStart">Start Draft Mode</button>
+      </div>
+
+      <div class="muted small">
+        Tip: You can rename players anytime from their team cards.
+      </div>
+    </div>
+  </div>
+
+  <script src="draft_data.js"></script>
+  <script src="draft_app.js"></script>
+</body>
+</html>

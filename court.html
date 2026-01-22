@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Anime Court — Game Board</title>
+  <link rel="stylesheet" href="court_styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="index.html" title="Back to Main Menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div class="brandtext">
+          <div class="title">Anime Court — Game Board</div>
+          <div class="subtitle">Case + Roles + Timers + Verdict (Local)</div>
+        </div>
+      </div>
+    </div>  
+    <div class="status">
+      <div class="pill" id="pillRound">Round: 1 / 5</div>
+      <div class="pill" id="pillPack">Pack: Anime Court</div>
+      <div class="pill" id="pillPhase">Phase: Lobby</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="court-layout">
+      <section class="panel panel-case">
+        <div class="panelhead">
+          <div>
+            <div class="paneltitle">Case Summary</div>
+            <div class="panelhint">Charge • Context • What decides guilt • (Optional) Court modifier</div>
+          </div>
+          <div class="panelactions">
+            <button class="btn" id="btnNewCase">New Case</button>
+            <button class="btn" id="btnAssignRoles">Assign Roles</button>
+            <button class="btn primary" id="btnStartRound">Start Round</button>
+            <button class="btn danger" id="btnRestart">Restart Game</button>
+          </div>
+        </div>
+
+        <div class="casebody">
+          <h2 class="caseheadline" id="caseHeadline">—</h2>
+          <div class="casesource" id="caseSource">—</div>
+
+          <div class="caselines">
+            <div class="caseline">
+              <div class="tag">Charge</div>
+              <div class="text" id="caseCharge">—</div>
+            </div>
+            <div class="caseline">
+              <div class="tag">Context</div>
+              <div class="text" id="caseContext">—</div>
+            </div>
+            <div class="caseline">
+              <div class="tag">What decides guilt</div>
+              <div class="text" id="caseDecides">—</div>
+            </div>
+          </div>
+
+          <div class="modbar hidden" id="modBar">
+            <div class="modlabel" id="modLabel">Court Modifier</div>
+            <div class="modtext" id="modText">—</div>
+          </div>
+        </div>
+
+        <div class="timerbox">
+          <div class="timerleft">
+            <div class="timerlabel">Active Timer</div>
+            <div class="timerphase" id="timerPhase">Not started</div>
+            <div class="timervalue" id="timerValue">00:00</div>
+          </div>
+          <div class="timerright">
+            <button class="btn small" id="btnTimerStart">Start</button>
+            <button class="btn small" id="btnTimerStop">Stop</button>
+            <button class="btn small" id="btnTimerReset">Reset</button>
+            <button class="btn small primary" id="btnNextPhase">Next Phase</button>
+            <button class="btn small" id="btnStopAlarm">Stop Alarm</button>
+          </div>
+          <div class="timerhint" id="timerHint">Timers do not auto-start. Use Start when you're ready.</div>
+        </div>
+      </section>
+
+      <section class="panel panel-roles">
+        <div class="panelhead">
+          <div>
+            <div class="paneltitle">Roles & Scoreboard</div>
+            <div class="panelhint">Judge • Prosecution • Defense</div>
+          </div>
+          <div class="panelactions">
+            <button class="btn" id="btnRevealMod">Reveal Modifier</button>
+            <button class="btn" id="btnNextRound">Next Round</button>
+          </div>
+        </div>
+
+        <div class="rolesgrid" id="rolesGrid">
+          <div class="rolecol" id="roleCol"></div>
+          <div class="playercol" id="playerCol"></div>
+        </div>
+
+        <div class="biasbar hidden" id="biasBar">
+          <div class="biastext">Bias called by at least half the players. Host may override if needed.</div>
+          <button class="btn small" id="btnHostOverride">Host Override</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal" id="lobbyModal">
+    <div class="modalcard">
+      <div class="modaltitle">Lobby Setup</div>
+      <div class="modalhint">Choose players, rounds, modifier frequency, timers, and names. Then start.</div>
+
+      <div class="lobbygrid">
+        <div class="field">
+          <label>Players (2–8)</label>
+          <select id="playerCount">
+            <option>2</option><option selected>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Total Rounds</label>
+          <input id="roundCount" type="number" min="1" max="50" value="5"/>
+        </div>
+
+        <div class="field">
+          <label>Modifier: Every _ Rounds (0 = off)</label>
+          <input id="modifierEvery" type="number" min="0" max="50" value="3"/>
+        </div>
+
+        <div class="field">
+          <label>Pack</label>
+          <select id="packSelect">
+            <option value="anime" selected>Anime Court</option>
+            <option value="movies">Movies (empty)</option>
+            <option value="tv">TV/Series (empty)</option>
+            <option value="cartoons">Cartoons (empty)</option>
+            <option value="animemovies">Anime/Cartoon Movies (empty)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Prosecution Timer (seconds)</label>
+          <input id="prosSeconds" type="number" min="10" max="3600" value="120"/>
+        </div>
+
+        <div class="field">
+          <label>Defense Timer (seconds)</label>
+          <input id="defSeconds" type="number" min="10" max="3600" value="120"/>
+        </div>
+
+        <div class="field">
+          <label>Judge Notes Timer (seconds)</label>
+          <input id="judgeSeconds" type="number" min="10" max="3600" value="60"/>
+        </div>
+
+        <div class="field">
+          <label>Alarm Volume (0–100)</label>
+          <div class="sliderrow">
+            <input id="alarmVolume" type="range" min="0" max="100" value="60"/>
+            <button class="btn small" id="btnPreviewAlarm">Preview</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="names" id="nameFields"></div>
+
+      <div class="modalactions">
+        <div class="muted" id="timersReadout">Timers: Pros 2:00 • Def 2:00 • Judge 1:00</div>
+        <button class="btn primary" id="btnLobbyStart">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="verdictModal">
+    <div class="modalcard">
+      <div class="modaltitle">Verdict</div>
+      <div class="modalhint">After hearing everything, who won this round?</div>
+
+      <div class="verdictgrid">
+        <button class="btn big" id="btnVerdictPros">Prosecution Wins</button>
+        <button class="btn big" id="btnVerdictDef">Defense Wins</button>
+      </div>
+
+      <div class="modalactions">
+        <div class="muted">Awards +1 to the winning team AND +1 to every player on that team.</div>
+        <button class="btn" id="btnVerdictCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="court_data.js"></script>
+  <script src="court_app.js"></script>
+</body>
+</html>

@@ -1,124 +1,63 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Anime Debate Game Board</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Big Domo — Debate Games</title>
+  <link rel="stylesheet" href="menu_styles.css" />
 </head>
-
 <body>
-    <header class="app-header">
-        <div class="title-block">
-            <h1 id="pageTitle">Anime Debate — Game Board</h1>
-            <div class="sub">Prompt + Options + Modifiers + Scoreboard (Local)</div>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div style="min-width:0">
+          <div class="title">Debate Games</div>
+          <div class="subtitle">Choose a mode • Host on Discord • Track rounds & points</div>
         </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="pill">Modes: <b>3</b></div>
+      <div class="pill">State: <b>Local</b></div>
+    </div>
+  </header>
 
-        <div class="topbar-pack">
-            <label for="packSelect" class="muted">Pack:</label>
-            <select id="packSelect"></select>
+  <main class="menu">
+    <section class="card hero">
+      <h1>Pick a Game Mode</h1>
+      <p class="muted">Each mode opens in its own page and always returns here.</p>
+    </section>
+
+    <section class="grid">
+      <a class="mode" href="debate.html">
+        <div class="mode-top">
+          <div class="badge">ANIME</div>
+          <div class="mode-title">Anime Debate Cards</div>
         </div>
+        <div class="mode-sub">Prompts + random characters + hidden modifiers + scoring.</div>
+      </a>
 
-        <div class="status-block">
-            <div class="pill">Round: <span id="roundNow">1</span> / <span id="roundMax">10</span></div>
-            <div class="pill">Prompts Left: <span id="promptsLeft">0</span></div>
-            <div class="pill">Chars Left: <span id="charsLeft">0</span></div>
-            <div class="pill">Mods Left: <span id="modsLeft">0</span></div>
+      <a class="mode" href="draft.html">
+        <div class="mode-top">
+          <div class="badge">DRAFT</div>
+          <div class="mode-title">Team Draft Royale</div>
         </div>
-    </header>
+        <div class="mode-sub">Snake draft teams, assign roles, swap, debate, vote winner.</div>
+      </a>
 
-    <main class="layout">
-        <!-- Left: Controls + Players -->
-        <aside class="panel">
-            <section class="card">
-                <h2>Controls</h2>
+      <a class="mode" href="court.html">
+        <div class="mode-top">
+          <div class="badge">COURT</div>
+          <div class="mode-title">Anime Court</div>
+        </div>
+        <div class="mode-sub">Random case, balanced roles, timers, verdict + bias override.</div>
+      </a>
+    </section>
 
-                <div class="btn-grid">
-                    <button id="btnGenerate" class="btn primary">Generate Round</button>
-                    <button id="btnLock" class="btn">Lock Picks</button>
-                    <button id="btnRevealMod" class="btn warn">Reveal Modifier</button>
-                    <button id="btnNext" class="btn success">Next Round</button>
-                    <button id="btnCheckWinner" class="btn">Check Winner</button>
-                </div>
-
-                <div class="btn-grid">
-                    <button id="btnRestart" class="btn danger">Restart Game</button>
-                    <button id="btnClearUsed" class="btn">Clear Used Pools</button>
-                    <button id="btnResetScores" class="btn">Reset Scores</button>
-                    <button id="btnClearBoard" class="btn">Clear Board</button>
-                </div>
-
-                <div class="hint" id="hintBox"></div>
-            </section>
-
-            <section class="card">
-                <h2>Players</h2>
-                <div class="players" id="players"></div>
-                <div class="small-note">
-                    Tip: Leave a name blank to “disable” a player slot.
-                </div>
-            </section>
-
-            <section class="card">
-                <h2>Used Pools</h2>
-                <div class="used-grid">
-                    <div>
-                        <div class="label">Used Prompts</div>
-                        <div class="count" id="usedPromptsCount">0</div>
-                    </div>
-                    <div>
-                        <div class="label">Used Characters</div>
-                        <div class="count" id="usedCharsCount">0</div>
-                    </div>
-                    <div>
-                        <div class="label">Used Modifiers</div>
-                        <div class="count" id="usedModsCount">0</div>
-                    </div>
-                </div>
-            </section>
-        </aside>
-
-        <!-- Center: Board -->
-        <section class="board">
-            <section class="card board-card">
-                <div class="board-top">
-                    <div class="board-title">Prompt</div>
-                    <div class="board-meta" id="boardMeta"></div>
-                </div>
-
-                <div class="prompt">
-                    <div class="prompt-left">
-                        <div class="prompt-text" id="promptText">Click <b>Generate Round</b> to start.</div>
-                    </div>
-
-                    <div class="prompt-right">
-                        <div class="prompt-info">
-                            <div class="prompt-source" id="promptSource"></div>
-                            <div class="prompt-expl" id="promptExpl"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modifier-box" id="modifierBox">
-                    <div class="modifier-title">Modifier</div>
-                    <div class="modifier-text" id="modifierText">No modifier revealed.</div>
-                </div>
-
-                <div class="options">
-                    <div class="options-title">Character Options</div>
-                    <div class="options-grid" id="optionsGrid"></div>
-                </div>
-            </section>
-        </section>
-    </main>
-
-    <footer class="app-footer">
-        <div>State autosaves locally in your browser (LocalStorage).</div>
+    <footer class="muted small" style="text-align:center;margin-top:18px;">
+      Tip: Use your browser’s “Open in new window” if you want the menu on one screen and the game on another.
     </footer>
-
-    <script src="data.js"></script>
-    <script src="app.js"></script>
+  </main>
 </body>
-
 </html>

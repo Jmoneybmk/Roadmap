@@ -1,676 +1,681 @@
-// app.js
+// debate_v2_app.js
 (() => {
-  const DATA = window.ANIME_DEBATE_DATA;
+  const DATA = window.ANIME_DEBATE_DATA || {};
+  const ALL_PROMPTS = Array.isArray(DATA.prompts) ? DATA.prompts.slice() : [];
+  const ALL_CHARS = Array.isArray(DATA.characters) ? DATA.characters.slice() : [];
+  const ALL_MODS = Array.isArray(DATA.modifiers) ? DATA.modifiers.slice() : [];
 
-  // --- DOM ---
+  // -----------------------------
+  // DOM
+  // -----------------------------
+  const phasePill = document.getElementById("phasePill");
   const roundNowEl = document.getElementById("roundNow");
   const roundMaxEl = document.getElementById("roundMax");
   const promptsLeftEl = document.getElementById("promptsLeft");
   const charsLeftEl = document.getElementById("charsLeft");
   const modsLeftEl = document.getElementById("modsLeft");
-
-  const usedPromptsCountEl = document.getElementById("usedPromptsCount");
-  const usedCharsCountEl = document.getElementById("usedCharsCount");
-  const usedModsCountEl = document.getElementById("usedModsCount");
+  const roundTypePill = document.getElementById("roundTypePill");
 
   const promptTextEl = document.getElementById("promptText");
   const promptSourceEl = document.getElementById("promptSource");
   const promptExplEl = document.getElementById("promptExpl");
-  const boardMetaEl = document.getElementById("boardMeta");
 
+  const modifierBox = document.getElementById("modifierBox");
   const modifierTextEl = document.getElementById("modifierText");
-  const modifierBoxEl = document.getElementById("modifierBox");
 
-  const optionsGridEl = document.getElementById("optionsGrid");
-  const hintBoxEl = document.getElementById("hintBox");
-  const playersEl = document.getElementById("players");
+  const optionsGrid = document.getElementById("optionsGrid");
 
-  const btnGenerate = document.getElementById("btnGenerate");
+  const playersWrap = document.getElementById("playersWrap");
+  const usedPromptsEl = document.getElementById("usedPrompts");
+  const usedCharsEl = document.getElementById("usedChars");
+  const usedModsEl = document.getElementById("usedMods");
+  const hintBox = document.getElementById("hintBox");
+
+  // buttons
+  const btnLobby = document.getElementById("btnLobby");
+  const btnNewRound = document.getElementById("btnNewRound");
   const btnLock = document.getElementById("btnLock");
-  const btnRevealMod = document.getElementById("btnRevealMod");
+  const btnReveal = document.getElementById("btnReveal");
+  const btnVoting = document.getElementById("btnVoting");
   const btnNext = document.getElementById("btnNext");
+  const btnCheckWinner = document.getElementById("btnCheckWinner");
   const btnRestart = document.getElementById("btnRestart");
   const btnClearUsed = document.getElementById("btnClearUsed");
-  const btnResetScores = document.getElementById("btnResetScores");
   const btnClearBoard = document.getElementById("btnClearBoard");
 
-  const STORAGE_KEY = "anime_debate_state_v1";
+  // lobby modal
+  const lobbyBackdrop = document.getElementById("lobbyBackdrop");
+  const btnCloseLobby = document.getElementById("btnCloseLobby");
+  const lobbyPlayerCount = document.getElementById("lobbyPlayerCount");
+  const lobbyRounds = document.getElementById("lobbyRounds");
+  const lobbyModEvery = document.getElementById("lobbyModEvery");
+  const lobbyNames = document.getElementById("lobbyNames");
+  const btnStartGame = document.getElementById("btnStartGame");
 
-  // --- Helpers ---
-  const shuffle = (arr) => {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
+  // vote modal
+  const voteBackdrop = document.getElementById("voteBackdrop");
+  const btnCloseVote = document.getElementById("btnCloseVote");
+  const voteBody = document.getElementById("voteBody");
+  const btnAwardPoint = document.getElementById("btnAwardPoint");
+
+  // -----------------------------
+  // STATE
+  // -----------------------------
+  const state = {
+    phase: "Lobby",         // Lobby | RoundSetup | Locked | Modifier | Voting | ReadyNext | Finished
+    roundNow: 0,
+    roundMax: Number(DATA.maxRounds || 10),
+    modEvery: 3,            // 0 = off
+    inTiebreaker: false,
+
+    // pools
+    promptsAvailable: ALL_PROMPTS.slice(),
+    charsAvailable: ALL_CHARS.slice(),
+    modsAvailable: ALL_MODS.slice(),
+    usedPromptIds: new Set(),
+    usedCharKeys: new Set(),
+    usedModIdx: new Set(),
+
+    // players
+    players: Array.from({length: 8}, (_, i) => ({ name: i < 4 ? `Player ${i+1}` : "", score: 0, enabled: i < 4 })),
+
+    // current round picks
+    currentPrompt: null,
+    currentOptions: [],  // [{tag, char:{name,anime}, assignedIndex, locked}]
+    currentModifier: null,
+    modifierRevealed: false,
+
+    voteSelectedIndex: null,
   };
 
-  const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  // -----------------------------
+  // HELPERS
+  // -----------------------------
+  const charKey = (c) => `${(c?.name||"").trim()}|${(c?.anime||"").trim()}`;
 
-  function setHint(msg) {
-    hintBoxEl.textContent = msg || "";
+  function activePlayers(){
+    return state.players
+      .map((p, idx) => ({...p, idx}))
+      .filter(p => p.enabled && p.name.trim().length > 0);
   }
 
-  // --- State ---
-  function freshState() {
-    return {
-      round: 1,
-      maxRounds: DATA.maxRounds || 10,
-
-      packId: "anime",
-      packLabel: "Anime",
-
-      availablePrompts: (getPacks().anime?.prompts || []).slice(),
-      usedPrompts: [],
-
-      availableCharacters: (getPacks().anime?.characters || []).slice(),
-      usedCharacters: [],
-
-      availableModifiers: (getPacks().anime?.modifiers || []).slice(),
-      usedModifiers: [],
-
-      // board
-      currentPrompt: null,
-      currentOptions: [],
-      currentAssignments: { A: null, B: null, C: null, D: null }, // option -> playerIndex
-      assignmentsLocked: false,
-      picksLocked: false,
-      currentModifier: null,
-      modifierRevealed: false,
-      gameOver: false,
-      tiebreakMode: false,
-      winners: [], // array of player indexes
-
-      players: [
-        { name: "Player 1", points: 0 },
-        { name: "Player 2", points: 0 },
-        { name: "Player 3", points: 0 },
-        { name: "Player 4", points: 0 }
-      ]
-    };
+  function setPhase(p){
+    state.phase = p;
+    phasePill.textContent = p;
+    syncButtons();
   }
 
-  let state = loadState();
-
-  function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    render();
-  }
-
-  function saveStateNoRender() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return freshState();
-      const parsed = JSON.parse(raw);
-
-      // Basic validation / fallback
-      if (!parsed || typeof parsed.round !== "number") return freshState();
-      return parsed;
-    } catch {
-      return freshState();
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
     }
+    return arr;
   }
 
-  // --- UI: Players ---
-  function renderPlayers() {
-    playersEl.innerHTML = "";
+  function pickRandomFromAvailable(list){
+    if(!list.length) return null;
+    const idx = Math.floor(Math.random() * list.length);
+    return list.splice(idx,1)[0];
+  }
+
+  function updateCounters(){
+    roundNowEl.textContent = String(state.roundNow);
+    roundMaxEl.textContent = String(state.roundMax);
+    promptsLeftEl.textContent = String(state.promptsAvailable.length);
+    charsLeftEl.textContent = String(state.charsAvailable.length);
+    modsLeftEl.textContent = String(state.modsAvailable.length);
+
+    usedPromptsEl.textContent = String(state.usedPromptIds.size);
+    usedCharsEl.textContent = String(state.usedCharKeys.size);
+    usedModsEl.textContent = String(state.usedModIdx.size);
+  }
+
+  function renderPlayers(){
+    playersWrap.innerHTML = "";
     state.players.forEach((p, idx) => {
-      const wrap = document.createElement("div");
-      wrap.className = "player";
+      const card = document.createElement("div");
+      card.className = "player" + ((p.name.trim()==="") ? " disabled" : "");
 
       const top = document.createElement("div");
       top.className = "player-top";
 
       const input = document.createElement("input");
-      input.value = p.name || "";
-      input.placeholder = `Player ${idx + 1}`;
-      input.addEventListener("input", (e) => {
-        state.players[idx].name = e.target.value;
-        saveStateNoRender(); // prevents rerender + focus loss
+      input.className = "player-name";
+      input.type = "text";
+      input.value = p.name;
+      input.placeholder = `Player ${idx+1}`;
+
+      // IMPORTANT: do not rerender whole UI on each keystroke
+      input.addEventListener("input", () => {
+        state.players[idx].name = input.value;
+        state.players[idx].enabled = input.value.trim().length > 0;
+        if(!state.players[idx].enabled){
+          state.players[idx].score = 0;
+          // clear any assignments pointing to this player
+          state.currentOptions.forEach(opt => {
+            if(opt.assignedIndex === idx) opt.assignedIndex = null;
+          });
+        }
+        // update only dependent parts
+        renderPlayersLight();
+        renderOptions(); // refresh dropdown list (removes disabled)
+        updateCounters();
       });
 
       top.appendChild(input);
-      wrap.appendChild(top);
+      card.appendChild(top);
 
-      const points = document.createElement("div");
-      points.className = "points";
+      const pts = document.createElement("div");
+      pts.className = "points";
 
-      const btnMinus = document.createElement("button");
-      btnMinus.textContent = "−";
-      btnMinus.addEventListener("click", () => {
-        state.players[idx].points = Math.max(0, (state.players[idx].points || 0) - 1);
-        saveState();
-      });
+      const minus = document.createElement("button");
+      minus.textContent = "−";
+      const plus = document.createElement("button");
+      plus.textContent = "+";
 
       const num = document.createElement("div");
       num.className = "num";
-      num.textContent = String(p.points ?? 0);
+      num.textContent = String(p.score);
 
-      const btnPlus = document.createElement("button");
-      btnPlus.textContent = "+";
-      btnPlus.addEventListener("click", () => {
-        state.players[idx].points = (state.players[idx].points || 0) + 1;
-        saveState();
+      const enabled = p.name.trim().length > 0;
+
+      minus.disabled = !enabled;
+      plus.disabled = !enabled;
+
+      minus.addEventListener("click", () => {
+        if(!enabled) return;
+        state.players[idx].score = Math.max(0, state.players[idx].score - 1);
+        num.textContent = String(state.players[idx].score);
+      });
+      plus.addEventListener("click", () => {
+        if(!enabled) return;
+        state.players[idx].score = state.players[idx].score + 1;
+        num.textContent = String(state.players[idx].score);
       });
 
-      points.appendChild(btnMinus);
-      points.appendChild(num);
-      points.appendChild(btnPlus);
+      pts.appendChild(minus);
+      pts.appendChild(num);
+      pts.appendChild(plus);
 
-      wrap.appendChild(points);
-      playersEl.appendChild(wrap);
+      card.appendChild(pts);
+      playersWrap.appendChild(card);
     });
   }
 
-  // --- UI: Board ---
-  function renderBoard() {
-    const r = state.round;
-    roundNowEl.textContent = String(r);
-    roundMaxEl.textContent = String(state.maxRounds);
+  function renderPlayersLight(){
+    // update score buttons disable state + placeholders without rebuilding inputs focus issues
+    // simplest: re-render fully but ONLY when not typing? We'll keep it minimal:
+    // For now, we won't touch DOM here—renderOptions handles dropdown.
+    // (Kept for future expansions.)
+  }
 
-    const pageTitle = document.getElementById("pageTitle");
-    if (pageTitle) pageTitle.textContent = `${state.packLabel} Debate — Game Board`;
-    document.title = `${state.packLabel} Debate — Game Board`;
-
-    promptsLeftEl.textContent = String(state.availablePrompts.length);
-    charsLeftEl.textContent = String(state.availableCharacters.length);
-    modsLeftEl.textContent = String(state.availableModifiers.length);
-
-    usedPromptsCountEl.textContent = String(state.usedPrompts.length);
-    usedCharsCountEl.textContent = String(state.usedCharacters.length);
-    usedModsCountEl.textContent = String(state.usedModifiers.length);
-
-    const needsMod = [3, 6, 9].includes(r);
-    boardMetaEl.textContent = needsMod ? "Modifier Round" : "Normal Round";
-
-    if (!state.currentPrompt) {
-      promptTextEl.innerHTML = "Click <b>Generate Round</b> to start.";
-      promptSourceEl.textContent = "";
-      promptExplEl.textContent = "";
-    } else {
-      promptTextEl.textContent = state.currentPrompt.prompt;
-      promptSourceEl.textContent = `Source: ${state.currentPrompt.source}`;
-      promptExplEl.textContent = state.currentPrompt.explanation;
+  function renderPrompt(){
+    if(!state.currentPrompt){
+      promptTextEl.innerHTML = "—";
+      promptSourceEl.textContent = "—";
+      promptExplEl.textContent = "—";
+      return;
     }
+    promptTextEl.textContent = state.currentPrompt.prompt;
+    promptSourceEl.textContent = `Source: ${state.currentPrompt.source}`;
+    promptExplEl.textContent = state.currentPrompt.explanation;
+  }
 
-    // Modifier box
-    const showModLabel = needsMod;
-    modifierBoxEl.style.display = showModLabel ? "block" : "none";
-    if (showModLabel) {
-      if (state.modifierRevealed && state.currentModifier) {
-        modifierTextEl.textContent = state.currentModifier;
-      } else {
-        modifierTextEl.textContent = "No modifier revealed.";
-      }
+  function renderModifier(){
+    const isModRound = state.modEvery > 0 && state.roundNow > 0 && (state.roundNow % state.modEvery === 0);
+    roundTypePill.textContent = isModRound ? "Modifier Round" : "Normal Round";
+
+    if(!isModRound || !state.modifierRevealed){
+      modifierBox.classList.add("hide");
+      modifierTextEl.textContent = "—";
+      return;
     }
+    modifierBox.classList.remove("hide");
+    modifierTextEl.textContent = state.currentModifier || "—";
+  }
 
-    // Options
-    optionsGridEl.innerHTML = "";
-    const labels = ["A", "B", "C", "D"];
+  function renderOptions(){
+    optionsGrid.innerHTML = "";
+    const actives = activePlayers();
+    const buildSelect = (optIdx) => {
+      const sel = document.createElement("select");
+      sel.className = "select";
+      // unassigned option
+      const o0 = document.createElement("option");
+      o0.value = "";
+      o0.textContent = "Unassigned";
+      sel.appendChild(o0);
 
-    // Build player dropdown options (use current names)
-    const activePlayers = state.players
-      .map((p, idx) => ({ idx, name: (p.name || `Player ${idx + 1}`).trim() }))
-      .filter(p => p.name.length > 0);
+      actives.forEach(p => {
+        const o = document.createElement("option");
+        o.value = String(p.idx);
+        o.textContent = p.name;
+        sel.appendChild(o);
+      });
 
-    state.currentOptions.forEach((opt, i) => {
-      const label = labels[i];
+      // set value
+      const assigned = state.currentOptions[optIdx]?.assignedIndex;
+      sel.value = (assigned === null || assigned === undefined) ? "" : String(assigned);
 
+      sel.disabled = state.phase === "Locked" || state.phase === "Modifier" || state.phase === "Voting" || state.phase === "ReadyNext";
+
+      sel.addEventListener("change", () => {
+        const v = sel.value;
+        state.currentOptions[optIdx].assignedIndex = v === "" ? null : Number(v);
+      });
+
+      return sel;
+    };
+
+    state.currentOptions.forEach((opt, idx) => {
       const card = document.createElement("div");
       card.className = "option";
 
       const tag = document.createElement("div");
       tag.className = "tag";
-      tag.textContent = `Option ${label}`;
+      tag.textContent = opt.tag;
 
-      const nm = document.createElement("div");
-      nm.className = "name";
-      nm.textContent = opt.name;
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = opt.char.name;
 
-      const note = document.createElement("div");
-      note.className = "note";
-      note.textContent = `${state.packLabel}: ${opt.anime}`;
+      const sub = document.createElement("div");
+      sub.className = "sub";
+      sub.textContent = `Anime: ${opt.char.anime || "—"}`;
 
-      // Assignment UI
-      const assignWrap = document.createElement("div");
-      assignWrap.className = "note";
-      assignWrap.style.marginTop = "10px";
+      const assign = document.createElement("div");
+      assign.className = "assign";
 
-      const assignLabel = document.createElement("div");
-      assignLabel.style.color = "var(--muted)";
-      assignLabel.style.fontSize = "12px";
-      assignLabel.style.marginBottom = "6px";
-      assignLabel.textContent = "Assigned to:";
+      const label = document.createElement("label");
+      label.textContent = "Assigned to:";
 
-      const select = document.createElement("select");
-      select.style.width = "100%";
-      select.style.padding = "8px 10px";
-      select.style.borderRadius = "10px";
-      select.style.border = "1px solid rgba(148,163,184,.25)";
-      select.style.background = "rgba(2,6,23,.5)";
-      select.style.color = "var(--text)";
-      select.disabled = state.assignmentsLocked;
+      const sel = buildSelect(idx);
 
-      // Default option
-      const optNone = document.createElement("option");
-      optNone.value = "";
-      optNone.textContent = "Unassigned";
-      select.appendChild(optNone);
-
-      // Player options
-      activePlayers.forEach(p => {
-        const o = document.createElement("option");
-        o.value = String(p.idx);
-        o.textContent = p.name;
-        select.appendChild(o);
-      });
-
-      // Set current selection
-      const current = state.currentAssignments?.[label];
-      select.value = (current === null || current === undefined) ? "" : String(current);
-
-      select.addEventListener("change", (e) => {
-        if (state.assignmentsLocked) return;
-        const v = e.target.value;
-        state.currentAssignments[label] = (v === "") ? null : Number(v);
-        saveState(); // re-render is OK here; dropdown focus not critical like typing
-      });
-
-      assignWrap.appendChild(assignLabel);
-      assignWrap.appendChild(select);
+      assign.appendChild(label);
+      assign.appendChild(sel);
 
       card.appendChild(tag);
-      card.appendChild(nm);
-      card.appendChild(note);
-      card.appendChild(assignWrap);
+      card.appendChild(name);
+      card.appendChild(sub);
+      card.appendChild(assign);
 
-      optionsGridEl.appendChild(card);
+      optionsGrid.appendChild(card);
     });
-
-    // Buttons / flow control
-    const boardReady = !!state.currentPrompt && state.currentOptions.length === 4;
-    btnGenerate.disabled = boardReady; // prevent double-generation
-    btnLock.disabled = !boardReady || state.assignmentsLocked;
-
-    btnCheckWinner.disabled = !(state.round >= state.maxRounds || state.tiebreakMode);
-
-    // Reveal modifier only when:
-    // - Round 3/6/9
-    // - boardReady
-    // - picks locked
-    // - not already revealed
-    // - modifiers available
-    btnRevealMod.disabled = !(needsMod && boardReady && state.assignmentsLocked && !state.modifierRevealed && state.availableModifiers.length > 0);
-
-    btnNext.disabled = !boardReady; // allow next once board exists
   }
 
-  function render() {
-    renderPlayers();
-    renderBoard();
+  function syncButtons(){
+    const hasLobby = state.roundNow === 0 && state.phase === "Lobby";
+    const hasRound = state.roundNow > 0;
+
+    btnNewRound.disabled = state.phase === "Lobby" && hasLobby ? true : false;
+    btnLock.disabled = !hasRound || !(state.phase === "RoundSetup");
+    btnReveal.disabled = !hasRound || !(state.phase === "Locked") || !(state.modEvery > 0 && state.roundNow % state.modEvery === 0) || state.modifierRevealed;
+    btnVoting.disabled = !hasRound || !(state.phase === "Locked" || state.phase === "Modifier");
+    btnNext.disabled = !hasRound || !(state.phase === "Voting" || state.phase === "ReadyNext");
   }
 
-  // --- Game actions ---
-  function clearBoardOnly() {
+  function clearBoardOnly(){
     state.currentPrompt = null;
     state.currentOptions = [];
-    state.picksLocked = false;
     state.currentModifier = null;
     state.modifierRevealed = false;
-    setHint("Board cleared.");
-    saveState();
+    renderPrompt();
+    renderModifier();
+    renderOptions();
   }
 
-  function generateRound() {
-    if (state.currentPrompt || state.currentOptions.length) {
-      setHint("Finish or clear the current round first.");
+  function resetPools(){
+    state.promptsAvailable = ALL_PROMPTS.slice();
+    state.charsAvailable = ALL_CHARS.slice();
+    state.modsAvailable = ALL_MODS.slice();
+    state.usedPromptIds = new Set();
+    state.usedCharKeys = new Set();
+    state.usedModIdx = new Set();
+  }
+
+  function startRound(){
+    // pick prompt
+    const prompt = pickRandomFromAvailable(state.promptsAvailable);
+    if(!prompt){
+      hintBox.innerHTML = "No prompts left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
       return;
     }
+    state.currentPrompt = prompt;
+    state.usedPromptIds.add(prompt.id);
 
-    if (state.availablePrompts.length < 1) {
-      setHint("No prompts left. Use Restart Game or Clear Used Pools.");
+    // pick 4 unique chars (not used before)
+    const picks = [];
+    const temp = [];
+    // take a shuffled copy of available and find first 4 not used
+    const shuffled = shuffle(state.charsAvailable.slice());
+    for(const c of shuffled){
+      if(picks.length >= 4) break;
+      const k = charKey(c);
+      if(state.usedCharKeys.has(k)) continue;
+      picks.push(c);
+    }
+    if(picks.length < 4){
+      hintBox.innerHTML = "Not enough unused characters left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
       return;
     }
-    if (state.availableCharacters.length < 4) {
-      setHint("Not enough characters left to generate 4 options. Use Restart Game or Clear Used Pools.");
-      return;
-    }
+    // remove picked chars from available
+    picks.forEach(c => {
+      const k = charKey(c);
+      state.usedCharKeys.add(k);
+      const idx = state.charsAvailable.findIndex(x => charKey(x) === k);
+      if(idx >= 0) state.charsAvailable.splice(idx,1);
+    });
 
-    // Pick prompt
-    const p = pickOne(state.availablePrompts);
-    state.availablePrompts = state.availablePrompts.filter(x => x.id !== p.id);
-    state.usedPrompts.push(p);
-    state.currentPrompt = p;
-
-    // Pick 4 unique characters (objects: { name, anime })
-    const shuffledChars = shuffle(state.availableCharacters);
-    const options = shuffledChars.slice(0, 4);
-
-    // Create stable keys so object comparison is reliable
-    const key = (c) => `${c.name}@@${c.anime}`;
-    const optionKeys = new Set(options.map(key));
-
-    // remove from available, add to used
-    state.availableCharacters = state.availableCharacters.filter(c => !optionKeys.has(key(c)));
-    state.usedCharacters.push(...options);
-    state.currentOptions = options;
-    state.currentAssignments = { A: null, B: null, C: null, D: null };
-    state.assignmentsLocked = false;
+    state.currentOptions = [
+      { tag: "Option A", char: picks[0], assignedIndex: null },
+      { tag: "Option B", char: picks[1], assignedIndex: null },
+      { tag: "Option C", char: picks[2], assignedIndex: null },
+      { tag: "Option D", char: picks[3], assignedIndex: null },
+    ];
 
     // reset modifier state
-    state.picksLocked = false;
     state.currentModifier = null;
     state.modifierRevealed = false;
 
-    const needsMod = [3, 6, 9].includes(state.round);
-    setHint(needsMod
-      ? "Modifier Round: Players pick their characters, then click Lock Picks, then Reveal Modifier."
-      : "Round generated. Players pick characters and debate."
-    );
+    state.roundNow += 1;
+    setPhase("RoundSetup");
 
-    saveState();
+    hintBox.innerHTML = "Assign options to players, then <b>Lock Picks</b>.";
+    renderPrompt();
+    renderModifier();
+    renderOptions();
+    updateCounters();
   }
 
-  function lockPicks() {
-    if (!state.currentPrompt || state.currentOptions.length !== 4) {
-      setHint("Generate a round first.");
+  function revealModifier(){
+    const isModRound = state.modEvery > 0 && state.roundNow > 0 && (state.roundNow % state.modEvery === 0);
+    if(!isModRound) return;
+
+    const mod = pickRandomFromAvailable(state.modsAvailable);
+    if(!mod){
+      hintBox.innerHTML = "No modifiers left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
       return;
     }
-
-    // Validate assignments (optional but recommended)
-    const entries = Object.entries(state.currentAssignments || {});
-    const picked = entries.filter(([_, v]) => v !== null && v !== undefined);
-
-    // Check: no two options assigned to the same player
-    const seenPlayers = new Set();
-    for (const [label, pIdx] of picked) {
-      if (seenPlayers.has(pIdx)) {
-        setHint("One player is assigned to more than one option. Fix assignments first.");
-        return;
-      }
-      seenPlayers.add(pIdx);
-    }
-
-    // Check: a single option can't be double-assigned (already impossible by design)
-    // Check: at least 2 players assigned (optional)
-    // if (picked.length < 2) { setHint("Assign at least 2 players for multiplayer rounds."); return; }
-
-    state.picksLocked = true;
-    state.assignmentsLocked = true;
-
-    setHint("Picks locked. If this is Round 3/6/9, you can now reveal the modifier.");
-    saveState();
-  }
-
-  function revealModifier() {
-    const needsMod = [3, 6, 9].includes(state.round);
-    if (!needsMod) {
-      setHint("This round has no modifier.");
-      return;
-    }
-    if (!state.assignmentsLocked) {
-      setHint("Lock Picks first (modifier reveals after players choose).");
-      return;
-    }
-    if (state.modifierRevealed) {
-      setHint("Modifier already revealed.");
-      return;
-    }
-    if (state.availableModifiers.length < 1) {
-      setHint("No modifiers left. Restart Game or Clear Used Pools.");
-      return;
-    }
-
-    const m = pickOne(state.availableModifiers);
-    state.availableModifiers = state.availableModifiers.filter(x => x !== m);
-    state.usedModifiers.push(m);
-
-    state.currentModifier = m;
+    state.currentModifier = mod;
     state.modifierRevealed = true;
-    setHint("Modifier revealed. Debate continues with the new rule applied.");
-    saveState();
+    state.usedModIdx.add(mod);
+
+    setPhase("Modifier");
+    hintBox.innerHTML = "Modifier revealed. Debate, then <b>Start Voting</b>.";
+    renderModifier();
+    updateCounters();
   }
 
-  function nextRound() {
-    if (!state.currentPrompt || state.currentOptions.length !== 4) {
-      setHint("Generate a round first.");
-      return;
+  // -----------------------------
+  // LOBBY
+  // -----------------------------
+  function openLobby(){
+    lobbyBackdrop.classList.remove("hidden");
+  }
+  function closeLobby(){
+    lobbyBackdrop.classList.add("hidden");
+  }
+
+  function renderLobbyNames(count){
+    lobbyNames.innerHTML = "";
+    for(let i=0;i<count;i++){
+      const wrap = document.createElement("div");
+      wrap.className = "field";
+      const label = document.createElement("label");
+      label.textContent = `Player ${i+1} name`;
+      const input = document.createElement("input");
+      input.className = "input";
+      input.type = "text";
+      input.value = state.players[i].name || `Player ${i+1}`;
+      input.addEventListener("input", () => {
+        state.players[i].name = input.value;
+      });
+      wrap.appendChild(label);
+      wrap.appendChild(input);
+      lobbyNames.appendChild(wrap);
     }
-
-    if (state.gameOver) {
-      setHint("Game is over. Press Restart Game to play again.");
-      return;
-    }
-
-    // Advance round
-    if (state.round >= state.maxRounds) {
-      setHint("You’re at the final round. Use Restart Game for a fresh run, or keep playing in tiebreakers by increasing maxRounds in data.js.");
-    } else {
-      state.round += 1;
-      setHint("Next round ready. Generate Round.");
-    }
-
-    // Clear board for new round
-    state.currentPrompt = null;
-    state.currentOptions = [];
-    state.picksLocked = false;
-    state.currentModifier = null;
-    state.modifierRevealed = false;
-
-    state.currentAssignments = { A: null, B: null, C: null, D: null };
-    state.assignmentsLocked = false;
-
-    // If we just finished Round 10 (or later), check for winner/tie
-    if (state.round >= state.maxRounds) {
-      checkWinnerAndMaybeTiebreak();
-    }
-
-    saveState();
   }
 
-  function restartGame() {
-    const keepNames = state.players.map(p => p.name);
-    state = freshState();
-    state.gameOver = false;
-    state.tiebreakMode = false;
-    state.winners = [];
-    // keep custom names if you want
-    state.players.forEach((p, i) => p.name = keepNames[i] || p.name);
-    setHint("Game restarted. Pools reset, round set to 1.");
-    saveState();
-  }
+  function applyLobby(){
+    const count = Number(lobbyPlayerCount.value);
+    state.roundMax = Math.max(1, Number(lobbyRounds.value || 10));
+    state.modEvery = Math.max(0, Number(lobbyModEvery.value || 3));
 
-  function clearUsedPools() {
-    // Return used back to available, keep current round/scores/board
-    state.availablePrompts = state.availablePrompts.concat(state.usedPrompts);
-    state.usedPrompts = [];
-
-    state.availableCharacters = state.availableCharacters.concat(state.usedCharacters);
-    state.usedCharacters = [];
-
-    state.availableModifiers = state.availableModifiers.concat(state.usedModifiers);
-    state.usedModifiers = [];
-
-    setHint("Used pools cleared back into available pools.");
-    saveState();
-  }
-
-  function resetScores() {
-    state.players.forEach(p => p.points = 0);
-    setHint("Scores reset.");
-    saveState();
-  }
-
-  function activePlayerIndexes() {
-    return state.players
-      .map((p, idx) => ({ p, idx }))
-      .filter(x => (x.p.name || "").trim().length > 0)
-      .map(x => x.idx);
-  }
-
-  function computeLeaders() {
-    const active = activePlayerIndexes();
-    let best = -Infinity;
-    let leaders = [];
-
-    for (const idx of active) {
-      const p = state.players[idx];
-      const pts = Number(
-        (p.points ?? p.score ?? p.pts ?? p.value ?? 0)
-      );
-      if (pts > best) {
-        best = pts;
-        leaders = [idx];
-      } else if (pts === best) {
-        leaders.push(idx);
+    // enable first N
+    state.players.forEach((p, idx) => {
+      if(idx < count){
+        p.enabled = true;
+        if(!p.name || p.name.trim()==="") p.name = `Player ${idx+1}`;
+      }else{
+        p.enabled = false;
+        p.name = "";
+        p.score = 0;
       }
-    }
+    });
 
-    return { best, leaders };
-  }
-
-  function checkWinnerAndMaybeTiebreak() {
-    const active = activePlayerIndexes();
-    if (active.length < 1) {
-      setHint("No active players.");
-      return;
-    }
-
-    const { best, leaders } = computeLeaders();
-
-    // If we're before round 10 and not in tiebreak, do nothing
-    if (!state.tiebreakMode && state.round < state.maxRounds) {
-      setHint(`Round ${state.round}/${state.maxRounds}. Winner check happens after Round ${state.maxRounds}.`);
-      return;
-    }
-
-    if (leaders.length === 1) {
-      state.gameOver = true;
-      state.winners = leaders;
-      state.tiebreakMode = false;
-
-      const name = (state.players[leaders[0]].name || `Player ${leaders[0] + 1}`).trim();
-      setHint(`🏆 Winner: ${name} with ${best} point(s)!`);
-      saveState();
-      return;
-    }
-
-    // Tie: enter / continue tiebreak mode
-    state.gameOver = false;
-    state.winners = leaders;
-    state.tiebreakMode = true;
-
-    const tiedNames = leaders.map(i => (state.players[i].name || `Player ${i + 1}`).trim()).join(", ");
-    setHint(`⚔️ Tie at ${best} point(s) between: ${tiedNames}. Tiebreak rounds begin!`);
-    saveState();
-  }
-
-  function getPacks() {
-    const d = window.ANIME_DEBATE_DATA || {};
-    return d.packs || {
-      anime: {
-        label: "Anime",
-        prompts: d.prompts || [],
-        characters: d.characters || [],
-        modifiers: d.modifiers || []
-      }
-    };
-  }
-
-  function applyPack(packId) {
-    const packs = getPacks();
-    const pack = packs[packId];
-    if (!pack) return;
-
-    state.packId = packId;
-    state.packLabel = pack.label || packId;
-
-    // Reset pools for chosen pack
-    state.availablePrompts = [...pack.prompts];
-    state.availableCharacters = [...pack.characters];
-    state.availableModifiers = [...pack.modifiers];
-
-    state.usedPrompts = [];
-    state.usedCharacters = [];
-    state.usedModifiers = [];
-
-    // Clear board but keep names/scores
+    // start game at round 0
+    state.roundNow = 0;
+    state.inTiebreaker = false;
     clearBoardOnly();
+    setPhase("Lobby");
 
-    // Reset rounds + endgame flags
-    state.round = 1;
-    state.gameOver = false;
-    state.tiebreakMode = false;
-    state.winners = [];
-
-    saveState();
+    renderPlayers();
+    updateCounters();
+    hintBox.innerHTML = "Ready. Click <b>New Round</b> to generate a prompt + 4 random options.";
   }
 
-  // --- Pack init (run once on load) ---
-  const packSelect = document.getElementById("packSelect");
-  const packs = getPacks();
+  // -----------------------------
+  // VOTING
+  // -----------------------------
+  function openVote(){
+    const actives = activePlayers();
+    if(!actives.length){
+      hintBox.innerHTML = "No active players. Open <b>Lobby Setup</b>.";
+      return;
+    }
+    state.voteSelectedIndex = actives[0].idx;
 
-  if (packSelect) {
-    // Fill dropdown
-    packSelect.innerHTML = "";
-    Object.entries(packs).forEach(([id, p]) => {
-      const o = document.createElement("option");
-      o.value = id;
-      o.textContent = p.label || id;
-      packSelect.appendChild(o);
+    voteBody.innerHTML = "";
+    const list = document.createElement("div");
+    list.className = "players";
+
+    actives.forEach(p => {
+      const row = document.createElement("label");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.gap = "10px";
+      row.style.padding = "10px 12px";
+      row.style.border = "1px solid rgba(31,41,55,.75)";
+      row.style.borderRadius = "14px";
+      row.style.background = "rgba(17,24,39,.45)";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "voteWinner";
+      radio.value = String(p.idx);
+      radio.checked = (p.idx === state.voteSelectedIndex);
+      radio.addEventListener("change", () => {
+        state.voteSelectedIndex = Number(radio.value);
+      });
+
+      const txt = document.createElement("div");
+      txt.style.fontWeight = "950";
+      txt.textContent = p.name;
+
+      row.appendChild(radio);
+      row.appendChild(txt);
+      list.appendChild(row);
     });
 
-    // Ensure state has a packId
-    if (!state.packId) state.packId = "anime";
+    voteBody.appendChild(list);
 
-    // Set UI selected value
-    packSelect.value = state.packId;
+    voteBackdrop.classList.remove("hidden");
+  }
+  function closeVote(){
+    voteBackdrop.classList.add("hidden");
+  }
 
-    // IMPORTANT:
-    // Only applyPack if current state pools don't match the pack structure (first run),
-    // otherwise you'd wipe progress every refresh.
-    if (window.ANIME_DEBATE_DATA?.packs) {
-      // If this save came from an older version or pools are missing, rehydrate from pack
-      const needsRehydrate =
-        !Array.isArray(state.availablePrompts) ||
-        !Array.isArray(state.availableCharacters) ||
-        !Array.isArray(state.availableModifiers);
+  function awardPoint(){
+    const idx = state.voteSelectedIndex;
+    if(idx === null || idx === undefined) return;
+    const p = state.players[idx];
+    if(!p || !p.enabled || p.name.trim()==="") return;
 
-      if (needsRehydrate) {
-        applyPack(state.packId);
-      } else {
-        // keep label in sync
-        const p = packs[state.packId];
-        state.packLabel = p?.label || state.packId;
-      }
+    p.score += 1;
+    renderPlayers();
+    hintBox.innerHTML = "Point awarded. Click <b>Next Round</b> when ready.";
+    setPhase("ReadyNext");
+  }
+
+  // -----------------------------
+  // WINNER
+  // -----------------------------
+  function checkWinner(){
+    const actives = activePlayers();
+    if(!actives.length){
+      hintBox.innerHTML = "No active players.";
+      return;
+    }
+    const max = Math.max(...actives.map(p => p.score));
+    const leaders = actives.filter(p => p.score === max);
+
+    // if not done with main rounds, just show leaders
+    if(state.roundNow < state.roundMax && !state.inTiebreaker){
+      hintBox.innerHTML = `Current leader: <b>${leaders.map(x=>x.name).join(", ")}</b> (${max} pts).`;
+      return;
     }
 
-    // On change, switch pack (this WILL reset pools/round)
-    packSelect.addEventListener("change", (e) => {
-      applyPack(e.target.value);
-    });
+    if(leaders.length === 1){
+      hintBox.innerHTML = `🏆 Winner: <b>${leaders[0].name}</b> with <b>${max}</b> point(s)!`;
+      setPhase("Finished");
+      return;
+    }
+
+    // tie -> tiebreaker
+    state.inTiebreaker = true;
+    state.roundMax = state.roundNow + 1; // extend one round at a time
+    hintBox.innerHTML = `Tie at <b>${max}</b> between: <b>${leaders.map(x=>x.name).join(", ")}</b>. Tiebreaker round begins!`;
   }
 
-  // --- Bind events ---
-  btnGenerate.addEventListener("click", generateRound);
-  btnLock.addEventListener("click", lockPicks);
-  btnRevealMod.addEventListener("click", revealModifier);
-  btnNext.addEventListener("click", nextRound);
-  btnRestart.addEventListener("click", restartGame);
-  btnClearUsed.addEventListener("click", clearUsedPools);
-  btnResetScores.addEventListener("click", resetScores);
-  btnClearBoard.addEventListener("click", clearBoardOnly);
+  // -----------------------------
+  // EVENTS
+  // -----------------------------
+  btnLobby.addEventListener("click", openLobby);
+  btnCloseLobby.addEventListener("click", closeLobby);
+  lobbyBackdrop.addEventListener("click", (e) => { if(e.target === lobbyBackdrop) closeLobby(); });
 
-  document.getElementById("btnCheckWinner").addEventListener("click", () => {
-    checkWinnerAndMaybeTiebreak();
+  btnStartGame.addEventListener("click", () => {
+    applyLobby();
+    closeLobby();
   });
 
-  // Initial render
-  render();
-  setHint("Ready. Click Generate Round.");
+  btnNewRound.addEventListener("click", () => {
+    if(state.phase === "Lobby" && state.roundNow === 0){
+      // must configure lobby first
+      hintBox.innerHTML = "Open <b>Lobby Setup</b> first.";
+      return;
+    }
+    if(state.phase === "Finished"){
+      hintBox.innerHTML = "Game finished. Click <b>Restart Game</b> to play again.";
+      return;
+    }
+    if(!state.inTiebreaker && state.roundNow >= state.roundMax){
+      hintBox.innerHTML = "Reached final round. Click <b>Check Winner</b> or start tiebreaker by voting.";
+      return;
+    }
+    startRound();
+  });
+
+  btnLock.addEventListener("click", () => {
+    if(state.phase !== "RoundSetup") return;
+    setPhase("Locked");
+    hintBox.innerHTML = (state.modEvery > 0 && state.roundNow % state.modEvery === 0)
+      ? "Picks locked. Now <b>Reveal Modifier</b>."
+      : "Picks locked. Debate, then <b>Start Voting</b>.";
+    renderOptions();
+    renderModifier();
+  });
+
+  btnReveal.addEventListener("click", () => revealModifier());
+
+  btnVoting.addEventListener("click", () => {
+    openVote();
+    setPhase("Voting");
+  });
+
+  btnCloseVote.addEventListener("click", closeVote);
+  voteBackdrop.addEventListener("click", (e) => { if(e.target === voteBackdrop) closeVote(); });
+
+  btnAwardPoint.addEventListener("click", () => {
+    awardPoint();
+    closeVote();
+  });
+
+  btnNext.addEventListener("click", () => {
+    if(!(state.phase === "Voting" || state.phase === "ReadyNext")) return;
+
+    // If main rounds finished, check winner automatically
+    if(!state.inTiebreaker && state.roundNow >= state.roundMax){
+      checkWinner();
+      if(state.phase === "Finished") return;
+      // tie -> allow continuing
+    } else if(state.inTiebreaker){
+      // after a tiebreaker vote, check winner
+      checkWinner();
+      if(state.phase === "Finished") return;
+    }
+
+    // prep for next
+    clearBoardOnly();
+    setPhase("Lobby"); // go back to setup state for next round generation
+    hintBox.innerHTML = "Ready for next. Click <b>New Round</b>.";
+  });
+
+  btnCheckWinner.addEventListener("click", checkWinner);
+
+  btnRestart.addEventListener("click", () => {
+    resetPools();
+    state.players.forEach(p => { p.score = 0; });
+    state.roundNow = 0;
+    state.roundMax = Number(lobbyRounds.value || DATA.maxRounds || 10);
+    state.inTiebreaker = false;
+    clearBoardOnly();
+    setPhase("Lobby");
+    renderPlayers();
+    updateCounters();
+    hintBox.innerHTML = "Restarted. Open <b>Lobby Setup</b> or click <b>New Round</b> after setup.";
+  });
+
+  btnClearUsed.addEventListener("click", () => {
+    resetPools();
+    updateCounters();
+    hintBox.innerHTML = "Used pools cleared.";
+  });
+
+  btnClearBoard.addEventListener("click", () => {
+    clearBoardOnly();
+    hintBox.innerHTML = "Board cleared.";
+  });
+
+  // -----------------------------
+  // INIT
+  // -----------------------------
+  // populate lobby player count
+  for(let i=2;i<=8;i++){
+    const o=document.createElement("option");
+    o.value=String(i);
+    o.textContent=String(i);
+    lobbyPlayerCount.appendChild(o);
+  }
+  lobbyPlayerCount.value="4";
+  lobbyPlayerCount.addEventListener("change", () => renderLobbyNames(Number(lobbyPlayerCount.value)));
+  renderLobbyNames(4);
+
+  // set initial counts
+  resetPools();
+  updateCounters();
+  renderPlayers();
+  setPhase("Lobby");
+
 })();

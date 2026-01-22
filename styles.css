@@ -314,3 +314,12 @@ body{
   .options-grid{grid-template-columns: 1fr}
   .prompt{grid-template-columns: 1fr;}
 }
+
+
+.player.disabled{
+  opacity:.55;
+}
+.player.disabled .points button{
+  opacity:.4;
+  cursor:not-allowed;
+}
