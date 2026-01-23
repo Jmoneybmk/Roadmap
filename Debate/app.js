@@ -1,9 +1,13 @@
 // debate_v2_app.js
 (() => {
   const DATA = window.ANIME_DEBATE_DATA || {};
-  const ALL_PROMPTS = Array.isArray(DATA.prompts) ? DATA.prompts.slice() : [];
-  const ALL_CHARS = Array.isArray(DATA.characters) ? DATA.characters.slice() : [];
-  const ALL_MODS = Array.isArray(DATA.modifiers) ? DATA.modifiers.slice() : [];
+  
+  // Data is stored in packs - combine all active packs
+  // For now, use the anime pack as the primary source
+  const animePack = DATA.packs?.anime || {};
+  const ALL_PROMPTS = Array.isArray(animePack.prompts) ? animePack.prompts.slice() : [];
+  const ALL_CHARS = Array.isArray(animePack.characters) ? animePack.characters.slice() : [];
+  const ALL_MODS = Array.isArray(animePack.modifiers) ? animePack.modifiers.slice() : [];
 
   // -----------------------------
   // DOM
@@ -67,6 +71,7 @@
     roundMax: Number(DATA.maxRounds || 10),
     modEvery: 3,            // 0 = off
     inTiebreaker: false,
+    lobbyConfigured: false, // tracks if lobby setup has been completed
 
     // pools
     promptsAvailable: ALL_PROMPTS.slice(),
@@ -85,7 +90,7 @@
     currentModifier: null,
     modifierRevealed: false,
 
-    voteSelectedIndex: null,
+    voteSelectedIndexes: [],  // Array of player indexes who won the round
   };
 
   // -----------------------------
@@ -133,7 +138,11 @@
 
   function renderPlayers(){
     playersWrap.innerHTML = "";
+    // Only show enabled players (those configured in lobby)
     state.players.forEach((p, idx) => {
+      // Skip players that aren't enabled
+      if(!p.enabled) return;
+      
       const card = document.createElement("div");
       card.className = "player" + ((p.name.trim()==="") ? " disabled" : "");
 
@@ -305,10 +314,11 @@
   }
 
   function syncButtons(){
-    const hasLobby = state.roundNow === 0 && state.phase === "Lobby";
+    const gameNotStarted = state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured;
     const hasRound = state.roundNow > 0;
 
-    btnNewRound.disabled = state.phase === "Lobby" && hasLobby ? true : false;
+    // New Round: disabled only if lobby hasn't been configured yet, or game is finished
+    btnNewRound.disabled = gameNotStarted || state.phase === "Finished";
     btnLock.disabled = !hasRound || !(state.phase === "RoundSetup");
     btnReveal.disabled = !hasRound || !(state.phase === "Locked") || !(state.modEvery > 0 && state.roundNow % state.modEvery === 0) || state.modifierRevealed;
     btnVoting.disabled = !hasRound || !(state.phase === "Locked" || state.phase === "Modifier");
@@ -457,6 +467,7 @@
     // start game at round 0
     state.roundNow = 0;
     state.inTiebreaker = false;
+    state.lobbyConfigured = true; // Mark lobby as configured so New Round becomes enabled
     clearBoardOnly();
     setPhase("Lobby");
 
@@ -474,7 +485,8 @@
       hintBox.innerHTML = "No active players. Open <b>Lobby Setup</b>.";
       return;
     }
-    state.voteSelectedIndex = actives[0].idx;
+    // Reset selected winners (now an array for multiple selections)
+    state.voteSelectedIndexes = [];
 
     voteBody.innerHTML = "";
     const list = document.createElement("div");
@@ -489,21 +501,27 @@
       row.style.border = "1px solid rgba(31,41,55,.75)";
       row.style.borderRadius = "14px";
       row.style.background = "rgba(17,24,39,.45)";
+      row.style.cursor = "pointer";
+      row.style.marginBottom = "8px";
 
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = "voteWinner";
-      radio.value = String(p.idx);
-      radio.checked = (p.idx === state.voteSelectedIndex);
-      radio.addEventListener("change", () => {
-        state.voteSelectedIndex = Number(radio.value);
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = String(p.idx);
+      checkbox.style.width = "18px";
+      checkbox.style.height = "18px";
+      checkbox.addEventListener("change", () => {
+        if(checkbox.checked){
+          state.voteSelectedIndexes.push(Number(checkbox.value));
+        } else {
+          state.voteSelectedIndexes = state.voteSelectedIndexes.filter(i => i !== Number(checkbox.value));
+        }
       });
 
       const txt = document.createElement("div");
       txt.style.fontWeight = "950";
       txt.textContent = p.name;
 
-      row.appendChild(radio);
+      row.appendChild(checkbox);
       row.appendChild(txt);
       list.appendChild(row);
     });
@@ -516,16 +534,30 @@
     voteBackdrop.classList.add("hidden");
   }
 
-  function awardPoint(){
-    const idx = state.voteSelectedIndex;
-    if(idx === null || idx === undefined) return;
-    const p = state.players[idx];
-    if(!p || !p.enabled || p.name.trim()==="") return;
-
-    p.score += 1;
+  function awardPoints(){
+    // Award 1 point to each selected player
+    if(!state.voteSelectedIndexes || state.voteSelectedIndexes.length === 0){
+      hintBox.innerHTML = "No players selected. Select at least one winner or close voting.";
+      return false;
+    }
+    
+    const winners = [];
+    state.voteSelectedIndexes.forEach(idx => {
+      const p = state.players[idx];
+      if(p && p.enabled && p.name.trim() !== ""){
+        p.score += 1;
+        winners.push(p.name);
+      }
+    });
+    
     renderPlayers();
-    hintBox.innerHTML = "Point awarded. Click <b>Next Round</b> when ready.";
+    if(winners.length === 1){
+      hintBox.innerHTML = `Point awarded to <b>${winners[0]}</b>. Click <b>Next Round</b> to continue.`;
+    } else {
+      hintBox.innerHTML = `Points awarded to <b>${winners.join(", ")}</b>. Click <b>Next Round</b> to continue.`;
+    }
     setPhase("ReadyNext");
+    return true;
   }
 
   // -----------------------------
@@ -571,7 +603,7 @@
   });
 
   btnNewRound.addEventListener("click", () => {
-    if(state.phase === "Lobby" && state.roundNow === 0){
+    if(state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured){
       // must configure lobby first
       hintBox.innerHTML = "Open <b>Lobby Setup</b> first.";
       return;
@@ -608,8 +640,9 @@
   voteBackdrop.addEventListener("click", (e) => { if(e.target === voteBackdrop) closeVote(); });
 
   btnAwardPoint.addEventListener("click", () => {
-    awardPoint();
-    closeVote();
+    if(awardPoints()){
+      closeVote();
+    }
   });
 
   btnNext.addEventListener("click", () => {
@@ -619,17 +652,16 @@
     if(!state.inTiebreaker && state.roundNow >= state.roundMax){
       checkWinner();
       if(state.phase === "Finished") return;
-      // tie -> allow continuing
+      // tie -> allow continuing to tiebreaker
     } else if(state.inTiebreaker){
       // after a tiebreaker vote, check winner
       checkWinner();
       if(state.phase === "Finished") return;
     }
 
-    // prep for next
+    // Automatically start the next round instead of just clearing board
     clearBoardOnly();
-    setPhase("Lobby"); // go back to setup state for next round generation
-    hintBox.innerHTML = "Ready for next. Click <b>New Round</b>.";
+    startRound();
   });
 
   btnCheckWinner.addEventListener("click", checkWinner);
@@ -640,11 +672,12 @@
     state.roundNow = 0;
     state.roundMax = Number(lobbyRounds.value || DATA.maxRounds || 10);
     state.inTiebreaker = false;
+    state.lobbyConfigured = false; // Reset so user must go through lobby again
     clearBoardOnly();
     setPhase("Lobby");
     renderPlayers();
     updateCounters();
-    hintBox.innerHTML = "Restarted. Open <b>Lobby Setup</b> or click <b>New Round</b> after setup.";
+    hintBox.innerHTML = "Restarted. Open <b>Lobby Setup</b> to configure players.";
   });
 
   btnClearUsed.addEventListener("click", () => {

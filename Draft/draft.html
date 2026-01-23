@@ -9,12 +9,12 @@
 <body>
   <header class="topbar">
     <div class="topbar-left">
-      <a class="back" href="index.html" title="Back to Prompt Debate">← Main Menu</a>
+      <a class="back" href="../index.html" title="Back to Prompt Debate">← Main Menu</a>
       <div class="brand">
         <div class="logo">BD</div>
         <div>
           <div class="title" id="pageTitle">Team Draft Royale</div>
-          <div class="subtitle">Draft teams, lock roles, tournament bracket, debate &amp; vote.</div>
+          <div class="subtitle">Draft teams, tournament bracket, MVP vote!</div>
         </div>
       </div>
     </div>
@@ -96,10 +96,11 @@
 
           <h3>Phases</h3>
           <ol class="muted">
-            <li>Draft (snake order)</li>
+            <li>Draft (underdog picks first)</li>
             <li>Lock Teams</li>
             <li>Tournament Bracket</li>
-            <li>Award Points → Next Round</li>
+            <li>Role MVP Vote</li>
+            <li>Next Round</li>
           </ol>
         </div>
       </div>
@@ -109,6 +110,12 @@
         <div class="tournament-header">
           <h3>🏆 Tournament Bracket</h3>
           <p class="muted" id="tournamentHint">Debate which team wins each match. Winner gets 1 point!</p>
+        </div>
+
+        <!-- Rivalry Banner (shown during matches) -->
+        <div class="rivalry-banner" id="rivalryBanner">
+          <span class="rivalry-icon">⚔️</span>
+          <span class="rivalry-text" id="rivalryText">First encounter!</span>
         </div>
 
         <!-- Current Match Display -->
@@ -149,13 +156,47 @@
           <div class="bracket-rounds" id="bracketRounds"></div>
         </div>
 
-        <!-- Tournament Complete -->
+        <!-- Tournament Complete (before MVP) -->
         <div class="tournament-complete" id="tournamentComplete">
           <div class="champion-crown">👑</div>
           <div class="champion-label">Round Champion</div>
           <div class="champion-name" id="championName">—</div>
           <div class="champion-sub" id="championSub">Earned the most points this round!</div>
-          <button class="btn primary" id="btnNextRoundFromTournament">Next Round</button>
+          <button class="btn primary" id="btnGoToMVP">Vote for Role MVP</button>
+        </div>
+      </div>
+
+      <!-- MVP VOTING PHASE -->
+      <div class="mvp-zone" id="mvpZone">
+        <div class="mvp-header">
+          <h3>🌟 Role MVP Vote</h3>
+          <p class="muted">Vote for the best character in the randomly selected role!</p>
+        </div>
+
+        <div class="mvp-role-reveal">
+          <div class="mvp-role-label">This Round's MVP Category</div>
+          <div class="mvp-role-name" id="mvpRoleName">—</div>
+          <div class="mvp-role-desc" id="mvpRoleDesc">—</div>
+        </div>
+
+        <div class="mvp-candidates" id="mvpCandidates">
+          <!-- Filled dynamically -->
+        </div>
+
+        <div class="mvp-tally" id="mvpTally">Select a character to vote!</div>
+
+        <div class="mvp-actions">
+          <button class="btn primary" id="btnConfirmMVP">Confirm MVP</button>
+          <button class="btn" id="btnClearMVPVotes">Clear Votes</button>
+        </div>
+
+        <!-- MVP Result -->
+        <div class="mvp-result" id="mvpResult">
+          <div class="mvp-winner-icon">🌟</div>
+          <div class="mvp-winner-label">Role MVP</div>
+          <div class="mvp-winner-name" id="mvpWinnerName">—</div>
+          <div class="mvp-winner-owner" id="mvpWinnerOwner">— earns +1 point!</div>
+          <button class="btn primary" id="btnNextRoundFromMVP">Next Round</button>
         </div>
       </div>
     </section>
