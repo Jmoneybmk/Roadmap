@@ -27,7 +27,7 @@ window.ANIME_DEBATE_DATA = {
       ],
 
       prompts: [
-        
+
         {
           id: 1, prompt: "This character can deliver an “Erwin’s Final Charge” level speech that makes soldiers ride into guaranteed death.",
           source: "Attack on Titan — Erwin’s Final Charge",
@@ -282,7 +282,7 @@ window.ANIME_DEBATE_DATA = {
 
       // Character pool: objects so we can display origin title on the board
       characters: [
-        
+
         // Dragon Ball
         { name: "Kid Goku", anime: "Dragon Ball" },
         { name: "Bulma", anime: "Dragon Ball" },
@@ -938,13 +938,524 @@ window.ANIME_DEBATE_DATA = {
       prompts: [],
       characters: [],
       templates: {
-        modifier: "Example: No gadgets allowed.",
-        prompt: {
-          id: 1, prompt: "This character can solve a Gotham-level case before the villain strikes again.",
-          source: "Batman: The Animated Series — Detective Work",
-          explanation: "Requires deduction, interrogation, and piecing clues together under time pressure."
-        },
-        character: { name: "Batman", anime: "Batman: The Animated Series" }
+        modifier: [
+          "No gadgets/equipments/weapons allowed.",
+          "No magic/elemental powers allowed.",
+          "Sokka from Avatar, the last airbender decided to join you.",
+          "Disregard the prompt. Can your pick beat Goku?",
+        ],
+        prompts: [
+          // 1) Batman: The Animated Series
+          {
+            id: 1,
+            prompt: "This character can solve a Gotham-level murder mystery in one night while avoiding being targeted by the killer.",
+            source: "Batman: The Animated Series — Detective case under deadline",
+            explanation: "This is brains + survival. The character must gather clues, interrogate suspects, and connect the full story before morning while the criminal actively tries to silence them."
+          },
+          {
+            id: 2,
+            prompt: "This character can survive being trapped in a Joker-style 'choice game' where every option risks innocent lives.",
+            source: "Batman: The Animated Series — Joker trap scenario",
+            explanation: "The villain controls the environment and forces brutal decisions. Winning means keeping control mentally, saving civilians, and escaping without falling for distractions."
+          },
+          {
+            id: 3,
+            prompt: "This character can escape Arkham Asylum during a full breakout event without being captured or injured.",
+            source: "Batman: The Animated Series — Arkham breakout chaos",
+            explanation: "Multiple threats everywhere, doors locked, traps possible, and nobody trustworthy. The character must navigate chaos and survive long enough to escape clean."
+          },
+
+          // 2) Superman: The Animated Series
+          {
+            id: 4,
+            prompt: "This character can stop a city-wide disaster without causing massive collateral damage.",
+            source: "Superman: The Animated Series — Metropolis crisis response",
+            explanation: "Power is dangerous here. The character must save civilians, stabilize the situation, and neutralize the threat without accidentally leveling the city."
+          },
+          {
+            id: 5,
+            prompt: "This character can defeat a Brainiac-level enemy that adapts, hacks systems, and learns mid-fight.",
+            source: "Superman: The Animated Series — Brainiac escalation threat",
+            explanation: "This isn’t just fighting strength. The opponent is intelligent and upgrades strategy as it goes, forcing the character to adapt and outthink the threat."
+          },
+
+          // 3) Justice League (DCAU)
+          {
+            id: 6,
+            prompt: "This character can keep a superhero team together after a betrayal and still win the war.",
+            source: "Justice League (DCAU) — Team trust collapse scenario",
+            explanation: "The hardest part is leadership. The character must prevent panic, rebuild coordination, and win while people doubt each other and the enemy gains ground."
+          },
+          {
+            id: 7,
+            prompt: "This character can stop a global invasion when the enemy has superior technology and numbers.",
+            source: "Justice League (DCAU) — World invasion event",
+            explanation: "This is large-scale strategy and endurance. The character must survive multiple battles, protect civilians, and make the correct call under extreme pressure."
+          },
+          {
+            id: 8,
+            prompt: "This character can defeat an alternate 'evil version' of heroes who have no morals holding them back.",
+            source: "Justice League (DCAU) — Justice Lords-style threat",
+            explanation: "The enemy is just as skilled but fights dirty. Winning requires either outsmarting them or matching their power without losing control of the situation."
+          },
+
+          // 4) Static Shock (ONLY Static in pool)
+          {
+            id: 9,
+            prompt: "This character can stop a dangerous city threat while protecting bystanders with zero backup.",
+            source: "Static Shock — Solo hero crisis",
+            explanation: "The character has to manage crowd safety, fast movement, and multiple dangers at once. Even if they can fight, they must avoid civilians getting hurt."
+          },
+
+          // 5) Xiaolin Showdown
+          {
+            id: 10,
+            prompt: "This character can win a magical artifact duel where the rules of the arena matter as much as power.",
+            source: "Xiaolin Showdown — Shen Gong Wu Showdown",
+            explanation: "Showdowns aren’t always raw combat. The environment, the artifact rules, and the win-condition can flip the match if you’re not careful."
+          },
+
+          // 6) Teen Titans (2003)
+          {
+            id: 11,
+            prompt: "This character can survive a Slade-style psychological war and still beat him without losing their mind.",
+            source: "Teen Titans (2003) — Slade manipulation arc",
+            explanation: "Slade attacks confidence, relationships, and patience. Winning requires mental toughness, not just combat skill."
+          },
+          {
+            id: 12,
+            prompt: "This character can stop a teammate from turning on the group while also surviving the mission.",
+            source: "Teen Titans (2003) — Betrayal inside the team",
+            explanation: "The danger comes from emotional conflict, divided focus, and hesitation. The character must keep the team alive while preventing internal collapse."
+          },
+
+          // 7) Samurai Jack
+          {
+            id: 13,
+            prompt: "This character can cross enemy-controlled territory filled with assassins and still reach the objective on time.",
+            source: "Samurai Jack — Aku’s world survival run",
+            explanation: "This is endurance and discipline. The character must survive nonstop danger, avoid ambushes, and keep moving even while exhausted."
+          },
+
+          // 8) Ben 10 (2005)
+          {
+            id: 14,
+            prompt: "This character can win a fight while their powers randomly change mid-battle.",
+            source: "Ben 10 (2005) — Omnitrix misfire challenge",
+            explanation: "The character can’t rely on one moveset. They must instantly adjust strategy as abilities swap at the worst possible times."
+          },
+          {
+            id: 15,
+            prompt: "This character can defeat a Vilgax-level opponent who refuses to go down and keeps escalating.",
+            source: "Ben 10 (2005) — Final boss pressure fight",
+            explanation: "The enemy is relentless. Winning means staying alive long enough to find a weakness or strategy that actually ends the fight."
+          },
+
+          // 9) The Powerpuff Girls
+          {
+            id: 16,
+            prompt: "This character can stop a city from being destroyed in under 10 minutes.",
+            source: "The Powerpuff Girls — Townsville emergency",
+            explanation: "This is speed + efficiency. The character has to identify the real threat instantly, protect civilians, and end it fast."
+          },
+          {
+            id: 17,
+            prompt: "This character can defeat a supernatural villain who attacks with fear and mind games instead of punches.",
+            source: "The Powerpuff Girls — HIM-style psychological threat",
+            explanation: "The opponent tries to break your confidence and twist reality. Winning requires resisting fear and staying focused."
+          },
+
+          // 10) Courage the Cowardly Dog (ONLY Courage in pool)
+          {
+            id: 18,
+            prompt: "This character can survive a supernatural curse where the enemy follows creepy rules that ignore logic.",
+            source: "Courage the Cowardly Dog — Curse survival scenario",
+            explanation: "This is horror survival. The character has to keep moving even while terrified, solve the situation fast, and protect others from the unknown."
+          },
+
+          // 11) Steven Universe
+          {
+            id: 19,
+            prompt: "This character can calm down a powerful enemy and prevent a larger war from starting.",
+            source: "Steven Universe — Peaceful resolution under pressure",
+            explanation: "This tests empathy and persuasion. The character must win without brute force, even when the enemy is stronger and ready to fight."
+          },
+          {
+            id: 20,
+            prompt: "This character can win a battle where teamwork and combination abilities decide the outcome.",
+            source: "Steven Universe — Fusion/team strategy scenario",
+            explanation: "Some fights are designed for synergy. The character must coordinate, protect allies, and exploit openings instead of solo carrying."
+          },
+
+          // 12) Adventure Time
+          {
+            id: 21,
+            prompt: "This character can survive a dungeon where magic rules change mid-run.",
+            source: "Adventure Time — Chaos dungeon crawl",
+            explanation: "Traps and enemies aren’t consistent. The character must adapt constantly when the world keeps changing the rules."
+          },
+          {
+            id: 22,
+            prompt: "This character can resist a world-ending evil that manipulates fear and destiny.",
+            source: "Adventure Time — Lich-level threat",
+            explanation: "The threat isn’t just physical—it’s existential. Winning means resisting panic, staying smart, and preventing catastrophe."
+          },
+
+          // 13) Regular Show
+          {
+            id: 23,
+            prompt: "This character can survive a normal job shift that escalates into a universe-level disaster.",
+            source: "Regular Show — Small problem becomes cosmic",
+            explanation: "This prompt is about improvisation. The character must fix things before the chaos scales beyond control."
+          },
+
+          // 14) Avatar: The Last Airbender
+          {
+            id: 24,
+            prompt: "This character can lead a stealth mission through enemy territory without getting captured.",
+            source: "Avatar: The Last Airbender — Enemy territory infiltration",
+            explanation: "The character must avoid patrols, keep the team quiet, and escape if discovered. One mistake can blow the entire mission."
+          },
+          {
+            id: 25,
+            prompt: "This character can win a final-boss duel while staying emotionally controlled and not making reckless choices.",
+            source: "Avatar: The Last Airbender — Endgame showdown discipline",
+            explanation: "Power alone isn’t enough. The character must fight smart, resist rage, and avoid getting baited into losing."
+          },
+          {
+            id: 26,
+            prompt: "This character can recover after a devastating defeat and still keep the team moving forward.",
+            source: "Avatar: The Last Airbender — Comeback after collapse",
+            explanation: "This tests leadership and resilience. The character must rebuild morale, regroup, and continue the mission when hope is low."
+          },
+
+          // 15) The Legend of Korra
+          {
+            id: 27,
+            prompt: "This character can handle a city-wide political crisis while also fighting a top-tier villain.",
+            source: "The Legend of Korra — Politics + combat pressure",
+            explanation: "The character needs judgment and leadership. Winning includes managing public fear while surviving the real threat."
+          },
+
+          // 16) Danny Phantom
+          {
+            id: 28,
+            prompt: "This character can defeat a ghost threat that uses possession, fear tactics, and intangibility.",
+            source: "Danny Phantom — Ghost Zone rules fight",
+            explanation: "Ghost powers ignore normal combat logic. The character must counter abilities like possession and survive mental pressure."
+          },
+          {
+            id: 29,
+            prompt: "This character can stop their future from turning into a nightmare timeline by making the right choice now.",
+            source: "Danny Phantom — Ultimate Enemy-style turning point",
+            explanation: "The enemy represents consequences. The character must prevent disaster through decision-making, not only fighting."
+          },
+
+          // 17) SpongeBob SquarePants
+          {
+            id: 30,
+            prompt: "This character can lead a dysfunctional team to victory in front of a huge crowd.",
+            source: "SpongeBob SquarePants — Band Geeks-style pressure win",
+            explanation: "This tests leadership, motivation, and keeping people focused. The team should fail, but the character must force success."
+          },
+          {
+            id: 31,
+            prompt: "This character can survive working an entire disaster shift where everything goes wrong nonstop.",
+            source: "SpongeBob SquarePants — Krusty Krab chaos day",
+            explanation: "It’s endurance and problem-solving under stress: customers, mistakes, sabotage, and constant bad luck."
+          },
+
+          // 18) The Fairly OddParents
+          {
+            id: 32,
+            prompt: "This character can fix a reality-breaking wish situation before it becomes permanent.",
+            source: "The Fairly OddParents — Wish meltdown scenario",
+            explanation: "The world bends to words. The character must outsmart loopholes, reverse damage, and act fast before reality locks in."
+          },
+          {
+            id: 33,
+            prompt: "This character can win a conflict where the enemy’s power comes from exploiting loopholes in the rules.",
+            source: "The Fairly OddParents — Rule-lawyer magic battle",
+            explanation: "The opponent wins by twisting logic. The character must be clever, careful with wording, and anticipate traps."
+          },
+
+          // 19) Jimmy Neutron: Boy Genius
+          {
+            id: 34,
+            prompt: "This character can save the town using only their intelligence and one last-second invention.",
+            source: "Jimmy Neutron — Genius under time pressure",
+            explanation: "No time to prepare. The character must design, build, and deploy a solution while everything collapses around them."
+          },
+          {
+            id: 35,
+            prompt: "This character can recover after their invention backfires and creates a worse problem than before.",
+            source: "Jimmy Neutron — Invention backlash scenario",
+            explanation: "Fixing the first mistake isn’t enough—now the character must handle a bigger threat created by their own actions."
+          },
+
+          // 20) Teenage Mutant Ninja Turtles (2003)
+          {
+            id: 36,
+            prompt: "This character can defeat a Shredder-level enemy while protecting their team from getting wiped out.",
+            source: "TMNT (2003) — High-stakes boss fight",
+            explanation: "This isn’t a clean duel. The enemy is deadly, relentless, and smart. The character must fight while keeping teammates alive."
+          },
+          {
+            id: 37,
+            prompt: "This character can survive being hunted by a powerful organization that wants to capture them alive.",
+            source: "TMNT (2003) — Bishop-style containment threat",
+            explanation: "It’s not just fighting. The enemy uses traps, surveillance, and strategy. The character must escape and outsmart a system."
+          },
+
+          // 21) Invader Zim (ONLY Zim + GIR in pool)
+          {
+            id: 38,
+            prompt: "This character can carry out a secret invasion plan without getting exposed by the world around them.",
+            source: "Invader Zim — Secret mission sabotage risk",
+            explanation: "The character must blend in, hide evidence, and stay focused while chaos and stupidity constantly threaten the cover."
+          },
+
+          // 22) Kim Possible
+          {
+            id: 39,
+            prompt: "This character can infiltrate a villain base, steal the objective, and escape clean without backup.",
+            source: "Kim Possible — Full infiltration mission",
+            explanation: "This is stealth + combat + improvisation. One alarm turns it into a nonstop chase, so the character must be efficient and smart."
+          },
+          {
+            id: 40,
+            prompt: "This character can fix a broken timeline after a mission goes wrong and the future becomes a disaster.",
+            source: "Kim Possible — A Sitch in Time-style crisis",
+            explanation: "The character must solve the problem across multiple situations, adapt quickly, and stop the future from locking in permanently."
+          },
+
+          // 23) American Dragon: Jake Long
+          {
+            id: 41,
+            prompt: "This character can protect their city while keeping their secret identity safe from hunters.",
+            source: "American Dragon: Jake Long — Identity pressure mission",
+            explanation: "The character is fighting while also hiding who they are. If the secret is exposed, their normal life and allies become targets."
+          },
+
+          // 24) Phineas and Ferb
+          {
+            id: 42,
+            prompt: "This character can build something impossible in one day and still avoid getting caught.",
+            source: "Phineas and Ferb — Candace bust challenge",
+            explanation: "This is creativity + speed + stealth. The project must be finished and somehow disappear before consequences hit."
+          },
+          {
+            id: 43,
+            prompt: "This character can defeat a goofy villain plan that becomes genuinely dangerous if ignored.",
+            source: "Phineas and Ferb — Doofenshmirtz scheme escalates",
+            explanation: "The enemy looks silly, but the device can wreck everything. The character must counter it with timing and cleverness."
+          },
+
+          // 25) Jackie Chan Adventures
+          {
+            id: 44,
+            prompt: "This character can secure a powerful magic talisman before villains collect enough to become unstoppable.",
+            source: "Jackie Chan Adventures — Talisman race scenario",
+            explanation: "The stakes climb every time a talisman is stolen. The character must win quickly because the enemy becomes stronger with each artifact."
+          },
+          {
+            id: 45,
+            prompt: "This character can defeat a Shendu-level enemy who gains stacked powers and refuses to go down.",
+            source: "Jackie Chan Adventures — Final boss empowered threat",
+            explanation: "The villain becomes overwhelming. Winning requires strategy, teamwork, and exploiting weaknesses instead of brute force."
+          },
+        ],
+        characters: [
+          // Batman: The Animated Series
+          { name: "Batman", anime: "Batman: The Animated Series" },
+          { name: "Joker", anime: "Batman: The Animated Series" },
+          { name: "Harley Quinn", anime: "Batman: The Animated Series" },
+          { name: "Catwoman", anime: "Batman: The Animated Series" },
+          { name: "Robin (Dick Grayson)", anime: "Batman: The Animated Series" },
+          { name: "Bane", anime: "Batman: The Animated Series" },
+          { name: "Two-Face", anime: "Batman: The Animated Series" },
+          { name: "Mr. Freeze", anime: "Batman: The Animated Series" },
+          { name: "Batman (Terry McGinnis)", anime: "Batman: The Animated Series" },
+
+          // Superman: The Animated Series
+          { name: "Superman", anime: "Superman: The Animated Series" },
+          { name: "Lois Lane", anime: "Superman: The Animated Series" },
+          { name: "Lex Luthor", anime: "Superman: The Animated Series" },
+          { name: "Brainiac", anime: "Superman: The Animated Series" },
+          { name: "Darkseid", anime: "Superman: The Animated Series" },
+          { name: "Supergirl", anime: "Superman: The Animated Series" },
+
+          // Justice League (DCAU)
+          { name: "Wonder Woman", anime: "Justice League (DCAU)" },
+          { name: "The Flash (Wally West)", anime: "Justice League (DCAU)" },
+          { name: "Green Lantern (John Stewart)", anime: "Justice League (DCAU)" },
+          { name: "Martian Manhunter", anime: "Justice League (DCAU)" },
+          { name: "Hawkgirl", anime: "Justice League (DCAU)" },
+          { name: "Doomsday", anime: "Justice League (DCAU)" },
+
+          // Static Shock (ONLY Static)
+          { name: "Static Shock", anime: "Static Shock" },
+
+          // Xiaolin Showdown (Main 4 + 2 villains)
+          { name: "Omi", anime: "Xiaolin Showdown" },
+          { name: "Kimiko", anime: "Xiaolin Showdown" },
+          { name: "Raimundo", anime: "Xiaolin Showdown" },
+          { name: "Clay", anime: "Xiaolin Showdown" },
+          { name: "Jack Spicer", anime: "Xiaolin Showdown" },
+          { name: "Chase Young", anime: "Xiaolin Showdown" },
+
+          // Teen Titans (2003)
+          { name: "Robin", anime: "Teen Titans (2003)" },
+          { name: "Starfire", anime: "Teen Titans (2003)" },
+          { name: "Raven", anime: "Teen Titans (2003)" },
+          { name: "Cyborg", anime: "Teen Titans (2003)" },
+          { name: "Beast Boy", anime: "Teen Titans (2003)" },
+          { name: "Slade", anime: "Teen Titans (2003)" },
+          { name: "Terra", anime: "Teen Titans (2003)" },
+
+          // Samurai Jack (ONLY Jack + Aku)
+          { name: "Samurai Jack", anime: "Samurai Jack" },
+          { name: "Aku", anime: "Samurai Jack" },
+
+          // Ben 10 (2005)
+          { name: "Ben Tennyson", anime: "Ben 10 (2005)" },
+          { name: "Gwen Tennyson", anime: "Ben 10 (2005)" },
+          { name: "Grandpa Max", anime: "Ben 10 (2005)" },
+          { name: "Kevin Levin", anime: "Ben 10 (2005)" },
+          { name: "Vilgax", anime: "Ben 10 (2005)" },
+          { name: "Azmuth", anime: "Ben 10 (2005)" },
+
+          // The Powerpuff Girls
+          { name: "Blossom", anime: "The Powerpuff Girls" },
+          { name: "Bubbles", anime: "The Powerpuff Girls" },
+          { name: "Buttercup", anime: "The Powerpuff Girls" },
+          { name: "Mojo Jojo", anime: "The Powerpuff Girls" },
+          { name: "HIM", anime: "The Powerpuff Girls" },
+          { name: "Princess Morbucks", anime: "The Powerpuff Girls" },
+
+          // Courage the Cowardly Dog (ONLY Courage)
+          { name: "Courage", anime: "Courage the Cowardly Dog" },
+
+          // Steven Universe
+          { name: "Steven Universe", anime: "Steven Universe" },
+          { name: "Garnet", anime: "Steven Universe" },
+          { name: "Amethyst", anime: "Steven Universe" },
+          { name: "Pearl", anime: "Steven Universe" },
+          { name: "Connie Maheswaran", anime: "Steven Universe" },
+          { name: "Lapis Lazuli", anime: "Steven Universe" },
+          { name: "Peridot", anime: "Steven Universe" },
+          { name: "Jasper", anime: "Steven Universe" },
+
+          // Adventure Time
+          { name: "Finn", anime: "Adventure Time" },
+          { name: "Jake", anime: "Adventure Time" },
+          { name: "Princess Bubblegum", anime: "Adventure Time" },
+          { name: "Marceline", anime: "Adventure Time" },
+          { name: "Ice King", anime: "Adventure Time" },
+          { name: "BMO", anime: "Adventure Time" },
+          { name: "Flame Princess", anime: "Adventure Time" },
+
+          // Regular Show
+          { name: "Mordecai", anime: "Regular Show" },
+          { name: "Rigby", anime: "Regular Show" },
+          { name: "Benson", anime: "Regular Show" },
+          { name: "Skips", anime: "Regular Show" },
+          { name: "Muscle Man", anime: "Regular Show" },
+          { name: "Pops", anime: "Regular Show" },
+
+          // Avatar: The Last Airbender
+          { name: "Aang", anime: "Avatar: The Last Airbender" },
+          { name: "Katara", anime: "Avatar: The Last Airbender" },
+          { name: "Sokka", anime: "Avatar: The Last Airbender" },
+          { name: "Toph Beifong", anime: "Avatar: The Last Airbender" },
+          { name: "Zuko", anime: "Avatar: The Last Airbender" },
+          { name: "Iroh", anime: "Avatar: The Last Airbender" },
+          { name: "Azula", anime: "Avatar: The Last Airbender" },
+          { name: "Fire Lord Ozai", anime: "Avatar: The Last Airbender" },
+
+          // The Legend of Korra
+          { name: "Korra", anime: "The Legend of Korra" },
+          { name: "Mako", anime: "The Legend of Korra" },
+          { name: "Bolin", anime: "The Legend of Korra" },
+          { name: "Asami Sato", anime: "The Legend of Korra" },
+          { name: "Tenzin", anime: "The Legend of Korra" },
+          { name: "Lin Beifong", anime: "The Legend of Korra" },
+          { name: "Amon", anime: "The Legend of Korra" },
+          { name: "Zaheer", anime: "The Legend of Korra" },
+
+          // Danny Phantom
+          { name: "Danny Phantom", anime: "Danny Phantom" },
+          { name: "Sam Manson", anime: "Danny Phantom" },
+          { name: "Tucker Foley", anime: "Danny Phantom" },
+          { name: "Vlad Plasmius", anime: "Danny Phantom" },
+          { name: "Jazz Fenton", anime: "Danny Phantom" },
+
+          // SpongeBob SquarePants
+          { name: "SpongeBob SquarePants", anime: "SpongeBob SquarePants" },
+          { name: "Patrick Star", anime: "SpongeBob SquarePants" },
+          { name: "Squidward Tentacles", anime: "SpongeBob SquarePants" },
+          { name: "Mr. Krabs", anime: "SpongeBob SquarePants" },
+          { name: "Sandy Cheeks", anime: "SpongeBob SquarePants" },
+          { name: "Plankton", anime: "SpongeBob SquarePants" },
+          { name: "Mrs. Puff", anime: "SpongeBob SquarePants" },
+          { name: "Larry the Lobster", anime: "SpongeBob SquarePants" },
+
+          // The Fairly OddParents
+          { name: "Timmy Turner", anime: "The Fairly OddParents" },
+          { name: "Cosmo", anime: "The Fairly OddParents" },
+          { name: "Wanda", anime: "The Fairly OddParents" },
+          { name: "Vicky", anime: "The Fairly OddParents" },
+          { name: "Mr. Crocker", anime: "The Fairly OddParents" },
+          { name: "Jorgen Von Strangle", anime: "The Fairly OddParents" },
+
+          // Jimmy Neutron: Boy Genius
+          { name: "Jimmy Neutron", anime: "Jimmy Neutron: Boy Genius" },
+          { name: "Carl Wheezer", anime: "Jimmy Neutron: Boy Genius" },
+          { name: "Sheen Estevez", anime: "Jimmy Neutron: Boy Genius" },
+          { name: "Cindy Vortex", anime: "Jimmy Neutron: Boy Genius" },
+          { name: "Goddard", anime: "Jimmy Neutron: Boy Genius" },
+          { name: "Professor Calamitous", anime: "Jimmy Neutron: Boy Genius" },
+
+          // Teenage Mutant Ninja Turtles (2003)
+          { name: "Leonardo", anime: "Teenage Mutant Ninja Turtles (2003)" },
+          { name: "Raphael", anime: "Teenage Mutant Ninja Turtles (2003)" },
+          { name: "Donatello", anime: "Teenage Mutant Ninja Turtles (2003)" },
+          { name: "Michelangelo", anime: "Teenage Mutant Ninja Turtles (2003)" },
+          { name: "Master Splinter", anime: "Teenage Mutant Ninja Turtles (2003)" },
+          { name: "Shredder", anime: "Teenage Mutant Ninja Turtles (2003)" },
+
+          // Invader Zim (ONLY Zim + GIR)
+          { name: "Zim", anime: "Invader Zim" },
+          { name: "GIR", anime: "Invader Zim" },
+
+          // Kim Possible
+          { name: "Kim Possible", anime: "Kim Possible" },
+          { name: "Ron Stoppable", anime: "Kim Possible" },
+          { name: "Shego", anime: "Kim Possible" },
+          { name: "Dr. Drakken", anime: "Kim Possible" },
+
+          // American Dragon: Jake Long
+          { name: "Jake Long", anime: "American Dragon: Jake Long" },
+          { name: "Rose (Huntsgirl)", anime: "American Dragon: Jake Long" },
+          { name: "Fu Dog", anime: "American Dragon: Jake Long" },
+          { name: "The Huntsman", anime: "American Dragon: Jake Long" },
+
+          // Phineas and Ferb
+          { name: "Phineas Flynn", anime: "Phineas and Ferb" },
+          { name: "Ferb Fletcher", anime: "Phineas and Ferb" },
+          { name: "Candace Flynn", anime: "Phineas and Ferb" },
+          { name: "Perry the Platypus", anime: "Phineas and Ferb" },
+          { name: "Dr. Heinz Doofenshmirtz", anime: "Phineas and Ferb" },
+          { name: "Isabella Garcia-Shapiro", anime: "Phineas and Ferb" },
+
+          // Jackie Chan Adventures
+          { name: "Jackie Chan", anime: "Jackie Chan Adventures" },
+          { name: "Jade Chan", anime: "Jackie Chan Adventures" },
+          { name: "Uncle Chan", anime: "Jackie Chan Adventures" },
+          { name: "Tohru", anime: "Jackie Chan Adventures" },
+          { name: "Valmont", anime: "Jackie Chan Adventures" },
+          { name: "Shendu", anime: "Jackie Chan Adventures" },
+        ]
       }
     },
 

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BD — Trivia</title>
+  <link rel="stylesheet" href="trivia_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">BD</div>
+      <div class="titles">
+        <div class="title">Trivia — Game Board</div>
+        <div class="subtitle">Lobby • Questions • Voting • Reveal • Tiebreak (Local)</div>
+      </div>
+    </div>
+    <div class="pillrow">
+      <div class="pill" id="pillRound">Round: 0 / 0</div>
+      <div class="pill" id="pillPack">Pack: —</div>
+      <div class="pill" id="pillPhase">Phase: Lobby</div>
+    </div>
+    <a class="backbtn" href="../index.html" title="Back to Main Menu">← Main Menu</a>
+  </header>
+
+  <main class="layout">
+    <section class="panel left">
+      <div class="panelHead">
+        <h2>Host Control</h2>
+        <div class="panelHint">Hidden side (do not show on stream)</div>
+      </div>
+
+      <div class="card" id="lobbyCard">
+        <div class="cardHead">
+          <h3>Lobby Setup</h3>
+          <div class="muted">Choose pack, players, question count, modifiers.</div>
+        </div>
+
+        <div class="grid2">
+          <label class="field">
+            <div class="label">Players (1–8)</div>
+            <select id="playerCount">
+              <option>1</option><option>2</option><option selected>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <div class="label">Questions (main game)</div>
+            <input id="questionCount" type="number" min="1" value="10" />
+          </label>
+
+          <label class="field">
+            <div class="label">Pack</div>
+            <select id="packSelect"></select>
+          </label>
+
+          <label class="field row">
+            <input id="modsEnabled" type="checkbox" checked />
+            <div>
+              <div class="label">Modifiers enabled</div>
+              <div class="muted small">Host may reveal a modifier at the start of any question.</div>
+            </div>
+          </label>
+
+          <label class="field">
+            <div class="label">Alarm volume</div>
+            <input id="alarmVol" type="range" min="0" max="100" value="60" />
+            <div class="muted small" id="alarmVolLabel">60%</div>
+          </label>
+
+          <div class="field">
+            <div class="label">Preview alarm</div>
+            <button class="btn" id="btnPreviewAlarm" type="button">Preview</button>
+          </div>
+        </div>
+
+        <div class="names" id="nameFields"></div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnStartGame" type="button">Start Game</button>
+          <button class="btn" id="btnResetAll" type="button">Reset / New Lobby</button>
+        </div>
+      </div>
+
+      <div class="card" id="voteCard">
+        <div class="cardHead">
+          <h3>Player Votes</h3>
+          <div class="muted" id="voteHint">Enter each player's answer (A–D). Keep this panel off-stream.</div>
+        </div>
+
+        <div class="voteGrid" id="voteGrid"></div>
+
+        <div class="cardSub">
+          <div class="muted small" id="skipNote"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="btnRevealModifier" type="button">Reveal Modifier</button>
+          <button class="btn primary" id="btnLockVotes" type="button">Lock Votes</button>
+          <button class="btn" id="btnRevealAnswer" type="button">Reveal Answer</button>
+          <button class="btn" id="btnNextQuestion" type="button">Next Question</button>
+          <button class="btn danger" id="btnResetGame" type="button">Reset Game</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="cardHead">
+          <h3>Scoreboard</h3>
+          <div class="muted">Auto-updates after reveal.</div>
+        </div>
+        <div class="scoreList" id="scoreList"></div>
+      </div>
+    </section>
+
+    <section class="panel right">
+      <div class="panelHead">
+        <h2>Question Board</h2>
+        <div class="panelHint">Stream-safe side</div>
+      </div>
+
+      <div class="card big" id="questionCard">
+        <div class="qTop">
+          <div>
+            <div class="qLabel">Question</div>
+            <div class="qText" id="qText">Start the game to begin.</div>
+          </div>
+          <div class="qMeta">
+            <div class="qSource" id="qSource">Source: —</div>
+            <div class="qState" id="qState">Waiting…</div>
+          </div>
+        </div>
+
+        <div class="modifierBanner hidden" id="modBanner">
+          <div class="modTag">Modifier</div>
+          <div class="modText" id="modText">—</div>
+        </div>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="revealBox hidden" id="revealBox">
+          <div class="revealTitle">Correct Answer</div>
+          <div class="revealAnswer" id="revealAnswerText">—</div>
+        </div>
+      </div>
+
+      <div class="card" id="tieCard">
+        <div class="cardHead">
+          <h3>Winner</h3>
+          <div class="muted">Auto-declared at the end. Tie triggers tiebreak questions.</div>
+        </div>
+        <div class="winnerText" id="winnerText">—</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="trivia_data.js"></script>
+  <script src="trivia_app.js"></script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Versus Mode</title>
+  <link rel="stylesheet" href="versus_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="../index.html" title="Back to Main Menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">VS</div>
+        <div style="min-width:0">
+          <div class="title">Versus Mode</div>
+          <div class="subtitle" id="subtitleText">Singles • Duos • Teams</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="pill">Phase: <b><span id="phasePill">Lobby</span></b></div>
+      <div class="pill">Round: <b><span id="roundNum">0</span></b></div>
+      <div class="pill">Mode: <b><span id="modePill">Singles</span></b></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- WELCOME SCREEN -->
+    <section class="panel welcome-panel" id="welcomePanel">
+      <div class="welcome-content">
+        <div class="welcome-icon">⚔️</div>
+        <h1>Versus Mode</h1>
+        <p class="muted">Draft your champion and battle through opponents!</p>
+        
+        <div class="mode-select">
+          <button class="mode-btn" data-mode="singles">
+            <div class="mode-icon">👤</div>
+            <div class="mode-label">Singles</div>
+            <div class="mode-desc">1 vs 1</div>
+          </button>
+          <button class="mode-btn" data-mode="duos">
+            <div class="mode-icon">👥</div>
+            <div class="mode-label">Duos</div>
+            <div class="mode-desc">2 vs 2</div>
+          </button>
+          <button class="mode-btn" data-mode="teams">
+            <div class="mode-icon">🎯</div>
+            <div class="mode-label">Teams</div>
+            <div class="mode-desc">Team vs Team</div>
+          </button>
+        </div>
+
+        <button class="btn primary large" id="btnOpenLobby">Setup Lobby</button>
+      </div>
+    </section>
+
+    <!-- GAME PANEL (hidden until game starts) -->
+    <section class="panel game-panel hidden" id="gamePanel">
+      <!-- PLAYERS SIDEBAR -->
+      <aside class="sidebar" id="sidebarPlayers">
+        <div class="sidebar-header">
+          <h3>Players</h3>
+          <div class="target-score">First to <span id="targetScoreDisplay">10</span></div>
+        </div>
+        <div class="players-list" id="playersList"></div>
+        <div class="sidebar-footer">
+          <button class="btn danger" id="btnEndGame">End Game</button>
+        </div>
+      </aside>
+
+      <!-- MAIN ARENA -->
+      <div class="arena">
+        <!-- DRAFT PHASE -->
+        <div class="draft-phase" id="draftPhase">
+          <div class="phase-header">
+            <h2>🎯 Draft Phase</h2>
+            <p class="muted">Pick your champion! <span id="draftOrderText"></span></p>
+          </div>
+          
+          <div class="draft-pool" id="draftPool"></div>
+          
+          <div class="draft-actions">
+            <button class="btn primary" id="btnConfirmDraft" disabled>Confirm Selection</button>
+          </div>
+        </div>
+
+        <!-- BATTLE PHASE -->
+        <div class="battle-phase hidden" id="battlePhase">
+          <div class="phase-header">
+            <h2>⚔️ Battle Phase</h2>
+            <div class="activity-banner" id="activityBanner">
+              <span class="activity-label">ACTIVITY</span>
+              <span class="activity-text" id="activityText">—</span>
+            </div>
+          </div>
+
+          <div class="matchups-container" id="matchupsContainer"></div>
+
+          <div class="battle-actions">
+            <button class="btn" id="btnRevealResults">Reveal & Vote Results</button>
+          </div>
+        </div>
+
+        <!-- VOTING PHASE -->
+        <div class="voting-phase hidden" id="votingPhase">
+          <div class="phase-header">
+            <h2>🗳️ Voting Phase</h2>
+            <p class="muted">Vote on each matchup: Does the player's character win?</p>
+          </div>
+
+          <div class="voting-matchups" id="votingMatchups"></div>
+
+          <div class="voting-actions">
+            <button class="btn primary" id="btnConfirmVotes">Confirm Votes & Continue</button>
+          </div>
+        </div>
+
+        <!-- RESULTS PHASE -->
+        <div class="results-phase hidden" id="resultsPhase">
+          <div class="phase-header">
+            <h2>📊 Round Results</h2>
+          </div>
+
+          <div class="results-summary" id="resultsSummary"></div>
+
+          <div class="results-actions">
+            <button class="btn primary" id="btnNextRound">Next Round</button>
+            <button class="btn" id="btnRedraft">Redraft (All Eliminated)</button>
+          </div>
+        </div>
+
+        <!-- GAME OVER -->
+        <div class="gameover-phase hidden" id="gameoverPhase">
+          <div class="gameover-content">
+            <div class="trophy">🏆</div>
+            <h1>Victory!</h1>
+            <div class="winner-name" id="winnerName">—</div>
+            <div class="winner-score" id="winnerScore">reached 10 points!</div>
+            <div class="gameover-actions">
+              <button class="btn primary" id="btnPlayAgain">Play Again</button>
+              <button class="btn" id="btnBackToMenu">Back to Menu</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- LOBBY MODAL -->
+  <div class="modal-backdrop hidden" id="lobbyBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Lobby Setup</div>
+          <div class="muted small">Configure players and game settings.</div>
+        </div>
+        <button class="btn" id="btnCloseLobby">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="lobby-grid">
+          <div class="field">
+            <label>Game Mode</label>
+            <select id="lobbyMode" class="select">
+              <option value="singles">Singles (1v1)</option>
+              <option value="duos">Duos (2v2)</option>
+              <option value="teams">Teams (Team vs Team)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Players (2–8)</label>
+            <select id="lobbyPlayerCount" class="select"></select>
+          </div>
+
+          <div class="field">
+            <label>Target Score</label>
+            <input id="lobbyTargetScore" class="input" type="number" min="5" max="50" value="10" />
+          </div>
+        </div>
+
+        <div class="section-split"></div>
+        
+        <h4 class="section-title">Player Names</h4>
+        <div class="names-grid" id="lobbyNames"></div>
+      </div>
+
+      <div class="modal-foot">
+        <div class="muted small">First to target score wins!</div>
+        <button class="btn primary" id="btnStartGame">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="versus_data.js"></script>
+  <script src="versus_app.js"></script>
+</body>
+</html>
