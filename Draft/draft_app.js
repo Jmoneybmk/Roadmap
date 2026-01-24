@@ -1,11 +1,22 @@
 (() => {
   'use strict';
 
-  const DATA = window.DRAFT_TEAM_DATA;
-  if (!DATA) { console.error('DRAFT_TEAM_DATA missing'); return; }
+  // Pack system - load selected pack
+  const PACKS = window.DRAFT_PACKS || {};
+  let DATA = window.DRAFT_TEAM_DATA || PACKS.anime || {};
+  
+  function getPack(key) { return PACKS[key] || PACKS.anime || DATA; }
+  function loadPack(key) {
+    DATA = getPack(key);
+    // Update roles from pack
+    if (DATA.roles) {
+      roles.length = 0;
+      DATA.roles.forEach(r => roles.push(r.id));
+    }
+  }
 
   const el = (id) => document.getElementById(id);
-  const lobbyModal = el('lobbyModal'), playerCountSel = el('playerCount'), nameFields = el('nameFields');
+  const lobbyModal = el('lobbyModal'), packSelect = el('packSelect'), playerCountSel = el('playerCount'), nameFields = el('nameFields');
   const modEveryInput = el('modEvery'), totalRoundsInput = el('totalRounds'), btnStart = el('btnStart');
   const pillPhase = el('pillPhase'), pillRound = el('pillRound'), pillTurn = el('pillTurn');
   const pillPick = el('pillPick'), pillMatch = el('pillMatch'), hint = el('hint');
@@ -40,7 +51,7 @@
       eliminatedTeams: [], matchVotesA: 0, matchVotesB: 0, currentMatchup: null, bracketHistory: [], roundChampion: null },
     mvp: { selectedRole: null, votes: new Map(), winner: null, confirmed: false }
   };
-  const roles = DATA.roles.map(r => r.id);
+  const roles = DATA.roles ? DATA.roles.map(r => r.id) : ['captain', 'vice', 'tank', 'assassin', 'support'];
 
   const clampInt = (v, min, max, fb) => { const n = parseInt(v,10); return Number.isNaN(n) ? fb : Math.min(max, Math.max(min, n)); };
   function sampleN(arr, n, excl) {
@@ -277,8 +288,23 @@
   function openLobby() { lobbyModal.style.display = 'flex'; state.rivalries = new Map(); }
   function closeLobby() { lobbyModal.style.display = 'none'; }
   function buildNameFields(n) { nameFields.innerHTML = ''; for (let i = 1; i <= n; i++) { const w = document.createElement('div'); w.className = 'namefield'; w.innerHTML = `<label>Player ${i}</label><input type="text" value="Player ${i}" />`; nameFields.appendChild(w); } }
+  function initPackSelect() {
+    if (!packSelect) return;
+    packSelect.innerHTML = '';
+    Object.keys(PACKS).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = PACKS[k].title || k;
+      packSelect.appendChild(opt);
+    });
+    packSelect.value = 'anime';
+  }
+
   playerCountSel.onchange = () => buildNameFields(parseInt(playerCountSel.value, 10));
+  if (packSelect) packSelect.onchange = () => loadPack(packSelect.value);
+  
   btnStart.onclick = () => {
+    if (packSelect) loadPack(packSelect.value);
     const cnt = clampInt(playerCountSel.value, 2, 8, 2); state.modEvery = clampInt(modEveryInput.value, 0, 99, 0); state.totalRounds = clampInt(totalRoundsInput.value, 1, 99, 5);
     const names = Array.from(nameFields.querySelectorAll('input')).slice(0, cnt).map(i => i.value.trim() || 'Player');
     state.players = names.map((nm, i) => ({ id: `P${i+1}`, name: nm, points: 0, swapUsedThisRound: false, locked: false }));
@@ -341,6 +367,6 @@
   btnCancelSwap.onclick = () => { swapBox.dataset.open = '0'; render(); };
   btnDoSwap.onclick = () => { if (state.phase !== PHASE.LOCK) return; const p = getSwapPlayer(); if (!p || p.swapUsedThisRound) return; const a = swapRoleA.value, b = swapRoleB.value; if (!a || !b || a === b) return; const t = getTeam(p.id); if (!t[a] || !t[b]) return; const tmp = t[a]; t[a] = t[b]; t[b] = tmp; p.swapUsedThisRound = true; swapBox.dataset.open = '0'; render(); };
 
-  function init() { buildNameFields(4); playerCountSel.value = '4'; swapBox.dataset.open = '0'; openLobby(); render(); }
+  function init() { initPackSelect(); buildNameFields(4); playerCountSel.value = '4'; swapBox.dataset.open = '0'; openLobby(); render(); }
   init();
 })();

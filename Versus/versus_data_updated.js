@@ -425,9 +425,6 @@ window.VERSUS_DATA = {
     { name: "Goten & Trunks", anime: "Dragon Ball Z" },
     { name: "Beerus & Whis", anime: "Dragon Ball Super" },
     { name: "Frieza & Cell", anime: "Dragon Ball Z" },
-    { name: "Goku & Gohan", anime: "Dragon Ball Series" },
-    { name: "Vegeta & Trunks", anime: "Dragon Ball Series" },
-    { name: "Gogeta & Vegito", anime: "Dragon Ball Series" },
 
     // Naruto
     { name: "Naruto & Sasuke", anime: "Naruto" },
@@ -436,9 +433,6 @@ window.VERSUS_DATA = {
     { name: "Minato & Kushina", anime: "Naruto" },
     { name: "Hashirama & Madara", anime: "Naruto" },
     { name: "Pain & Konan", anime: "Naruto" },
-    { name: "Naruto & Jiraiya", anime: "Naruto Series" },
-    { name: "Sasuke & Orochimaru", anime: "Naruto Series" },
-    { name: "Sakura & Tsunade", anime: "Naruto Series" },
 
     // One Piece
     { name: "Luffy & Zoro", anime: "One Piece" },
@@ -462,7 +456,6 @@ window.VERSUS_DATA = {
     { name: "Deku & Bakugo", anime: "My Hero Academia" },
     { name: "All Might & Endeavor", anime: "My Hero Academia" },
     { name: "Todoroki & Deku", anime: "My Hero Academia" },
-    { name: "All For One & Shigaraki", anime: "My Hero Academia" },
 
     // Attack on Titan
     { name: "Eren & Mikasa", anime: "Attack on Titan" },
@@ -471,6 +464,16 @@ window.VERSUS_DATA = {
     // Jujutsu Kaisen
     { name: "Gojo & Geto", anime: "Jujutsu Kaisen" },
     { name: "Itadori & Todo", anime: "Jujutsu Kaisen" },
+  
+    // Dragon Ball Series
+    { name: "Goku & Gohan", anime: "Dragon Ball Series" },
+    { name: "Vegeta & Trunks", anime: "Dragon Ball Series" },
+    { name: "Gogeta & Vegito", anime: "Dragon Ball Series" },
+
+    // Naruto Series
+    { name: "Naruto & Jiraiya", anime: "Naruto Series" },
+    { name: "Sasuke & Orochimaru", anime: "Naruto Series" },
+    { name: "Sakura & Tsunade", anime: "Naruto Series" },
 
     // Bleach
     { name: "Ichigo & Rukia", anime: "Bleach" },
@@ -596,7 +599,7 @@ window.VERSUS_DATA = {
     { name: "Lugh & Dia", anime: "The World’s Finest Assassin Gets Reincarnated as an Aristocrat" },
     { name: "Lugh & Tarte", anime: "The World’s Finest Assassin Gets Reincarnated as an Aristocrat" },
     { name: "Lugh & Maha", anime: "The World’s Finest Assassin Gets Reincarnated as an Aristocrat" },
-  ],
+],
 
   // =========================================================
   // TEAMS - 30 Pre-built Teams
@@ -615,7 +618,6 @@ window.VERSUS_DATA = {
     { name: "Ginyu Force", anime: "Dragon Ball Z", members: "Captain Ginyu, Jeice, Burter, Recoome, Guldo" },
     { name: "Universe 7 Tournament Team", anime: "Dragon Ball Super", members: "Goku, Vegeta, Gohan, Frieza, Android 17, Android 18, Piccolo, Krillin, Tien, Roshi" },
     { name: "Gods of Destruction", anime: "Dragon Ball Super", members: "Beerus, Champa, and the other GoDs" },
-    { name: "Universe 7 Gods", anime: "Dragon Ball Series", members: "Beerus, Whis, Supreme Kai, Elder Kai" },
 
     // One Piece
     { name: "Straw Hat Pirates", anime: "One Piece", members: "Luffy, Zoro, Nami, Usopp, Sanji, Chopper, Robin, Franky, Brook, Jinbe" },
@@ -648,6 +650,14 @@ window.VERSUS_DATA = {
     // Jujutsu Kaisen
     { name: "Tokyo Jujutsu High", anime: "Jujutsu Kaisen", members: "Gojo, Itadori, Megumi, Nobara, Maki, Panda, Inumaki, Yuta" },
     { name: "Cursed Spirits", anime: "Jujutsu Kaisen", members: "Mahito, Jogo, Hanami, Dagon" },
+  
+    // Dragon Ball Series
+    { name: "Z Fighters (Core)", anime: "Dragon Ball Series", members: "Goku, Vegeta, Gohan, Piccolo, Trunks, Krillin, Android 18" },
+    { name: "Universe 7 Gods", anime: "Dragon Ball Series", members: "Beerus, Whis, Supreme Kai, Elder Kai" },
+
+    // Naruto Series
+    { name: "Team 7 (Prime)", anime: "Naruto Series", members: "Naruto, Sasuke, Sakura, Kakashi" },
+    { name: "Akatsuki (Core)", anime: "Naruto Series", members: "Pain, Itachi, Kisame, Deidara, Sasori, Hidan, Kakuzu, Konan, Obito" },
 
     // Bleach
     { name: "Gotei 13 (Key Captains)", anime: "Bleach", members: "Yamamoto, Shunsui, Byakuya, Kenpachi, Toshiro, Mayuri, Soi Fon" },
@@ -748,5 +758,5 @@ window.VERSUS_DATA = {
     // The World’s Finest Assassin Gets Reincarnated as an Aristocrat
     { name: "Tuatha Dé Party", anime: "The World’s Finest Assassin Gets Reincarnated as an Aristocrat", members: "Lugh, Dia, Tarte, Maha" },
     { name: "Viekone Knights (Highlights)", anime: "The World’s Finest Assassin Gets Reincarnated as an Aristocrat", members: "Lugh, Cian, Esri" },
-  ],
+],
 };
