@@ -1,277 +1,719 @@
-(()=>{'use strict';
-const $=s=>document.querySelector(s);
-const pillRound=$('#pillRound'),pillPack=$('#pillPack'),pillPhase=$('#pillPhase');
-const playerCountSel=$('#playerCount'),questionCountInp=$('#questionCount'),packSelect=$('#packSelect'),modsEnabledChk=$('#modsEnabled');
-const alarmVol=$('#alarmVol'),alarmVolLabel=$('#alarmVolLabel'),btnPreviewAlarm=$('#btnPreviewAlarm');
-const nameFields=$('#nameFields'),btnStartGame=$('#btnStartGame'),btnResetAll=$('#btnResetAll');
-const btnRevealModifier=$('#btnRevealModifier'),btnLockVotes=$('#btnLockVotes'),btnRevealAnswer=$('#btnRevealAnswer'),btnNextQuestion=$('#btnNextQuestion'),btnResetGame=$('#btnResetGame');
-const voteCard=$('#voteCard'),lobbyCard=$('#lobbyCard'),voteGrid=$('#voteGrid'),scoreList=$('#scoreList'),voteHint=$('#voteHint'),skipNote=$('#skipNote');
-const qText=$('#qText'),qSource=$('#qSource'),qState=$('#qState'),answersEl=$('#answers');
-const modBanner=$('#modBanner'),modText=$('#modText'),revealBox=$('#revealBox'),revealAnswerText=$('#revealAnswerText'),winnerText=$('#winnerText');
+// trivia_app.js - Updated to match Draft mode patterns
+// Winner checked AFTER all rounds complete, tiebreaker adds extra rounds
+(() => {
+  'use strict';
 
-const STORAGE_KEY='bd_trivia_state_v1';
-const PHASE={LOBBY:'Lobby',QUESTION:'Question',VOTING:'Voting',REVEAL:'Reveal',TIEBREAK:'Tiebreak'};
-let state={phase:PHASE.LOBBY,packKey:'anime',modsEnabled:true,mainQuestions:10,round:0,roundTarget:0,tiebreakActive:false,
-players:[],eligiblePlayerIds:null,questionPool:[],usedQuestionIds:new Set(),current:null,votes:{},locked:false,revealed:false,
-alarmVolume:.6,alarm:{ctx:null,node:null,playing:false}};
-const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
-const shuffle=(arr)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-const uid=()=>Math.random().toString(36).slice(2,9);
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({...state,usedQuestionIds:Array.from(state.usedQuestionIds)}));}
-function load(){try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const d=JSON.parse(raw);state={...state,...d,usedQuestionIds:new Set(d.usedQuestionIds||[])};}catch(e){}}
+  // =====================================================
+  // PACK SYSTEM
+  // =====================================================
+  const PACKS = window.TRIVIA_PACKS || {};
+  let currentPackKey = 'anime';
+  let currentPack = PACKS[currentPackKey] || {};
 
-function ensureAudio(){if(state.alarm.ctx)return;const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;state.alarm.ctx=new Ctx();}
-function stopAlarm(){const ctx=state.alarm.ctx;if(!ctx||!state.alarm.node){state.alarm.playing=false;return;}try{state.alarm.node.g.gain.setValueAtTime(.0001,ctx.currentTime);state.alarm.node.o.stop(ctx.currentTime+.03);}catch(e){}state.alarm.node=null;state.alarm.playing=false;}
-function playAlarm(){ensureAudio();const ctx=state.alarm.ctx;if(!ctx)return;stopAlarm();const o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.value=880;g.gain.value=.0001;
-const vol=clamp(state.alarmVolume,0,1);g.gain.linearRampToValueAtTime(vol*.18,ctx.currentTime+.02);o.connect(g).connect(ctx.destination);o.start();
-state.alarm.node={o,g};state.alarm.playing=true;let pulses=0;const iv=setInterval(()=>{if(!state.alarm.playing){clearInterval(iv);return;}
-pulses++;const t=ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol*.22,t+.02);g.gain.linearRampToValueAtTime(.0001,t+.28);
-if(pulses>=6){clearInterval(iv);g.gain.setValueAtTime(vol*.10,ctx.currentTime);}},320);}
+  function loadPack(key) {
+    currentPackKey = key;
+    currentPack = PACKS[key] || PACKS.anime || {};
+  }
 
-function normalizePackKey(key,packs){
-  if(!key) return null;
-  const raw=String(key).trim();
-  if(!raw) return null;
-  if(packs && packs[raw]) return raw;
-  const lower=raw.toLowerCase();
-  if(packs && packs[lower]) return lower;
-  const alias={'anime trivia':'anime','movie trivia':'movies','movies':'movies','movie':'movies','cartoon trivia':'cartoons','cartoons':'cartoons','cartoon':'cartoons','tv / series':'series','series':'series','tv':'series','anime / cartoon movies':'anime_movies','anime_movies':'anime_movies'};
-  const mapped=alias[lower];
-  if(mapped && packs && packs[mapped]) return mapped;
-  return null;
-}
+  loadPack('anime');
 
-function initPacks(){
-  const packs=window.TRIVIA_PACKS||{};
-  packSelect.innerHTML='';
-  const keys=Object.keys(packs);
-  keys.forEach(k=>{
-    const opt=document.createElement('option');
-    opt.value=k;
-    opt.textContent=(packs[k]&&packs[k].title)||k;
-    packSelect.appendChild(opt);
+  // =====================================================
+  // DOM ELEMENTS
+  // =====================================================
+  const pillPhase = document.getElementById('pillPhase');
+  const pillRound = document.getElementById('pillRound');
+  const pillPack = document.getElementById('pillPack');
+  const questionStatus = document.getElementById('questionStatus');
+
+  const qText = document.getElementById('qText');
+  const qSource = document.getElementById('qSource');
+  const answersGrid = document.getElementById('answersGrid');
+  const modBanner = document.getElementById('modBanner');
+  const modText = document.getElementById('modText');
+  const revealBox = document.getElementById('revealBox');
+  const revealAnswer = document.getElementById('revealAnswer');
+  const winnerBox = document.getElementById('winnerBox');
+  const winnerName = document.getElementById('winnerName');
+
+  const voteGrid = document.getElementById('voteGrid');
+  const voteHint = document.getElementById('voteHint');
+  const scoreList = document.getElementById('scoreList');
+  const hintBox = document.getElementById('hintBox');
+
+  // Buttons
+  const btnLobby = document.getElementById('btnLobby');
+  const btnRevealMod = document.getElementById('btnRevealMod');
+  const btnLockVotes = document.getElementById('btnLockVotes');
+  const btnRevealAnswer = document.getElementById('btnRevealAnswer');
+  const btnNextQuestion = document.getElementById('btnNextQuestion');
+  const btnRestart = document.getElementById('btnRestart');
+
+  // Lobby modal
+  const lobbyBackdrop = document.getElementById('lobbyBackdrop');
+  const btnCloseLobby = document.getElementById('btnCloseLobby');
+  const packSelect = document.getElementById('packSelect');
+  const playerCount = document.getElementById('playerCount');
+  const questionCount = document.getElementById('questionCount');
+  const modsToggle = document.getElementById('modsToggle');
+  const lobbyNames = document.getElementById('lobbyNames');
+  const btnStartGame = document.getElementById('btnStartGame');
+
+  // =====================================================
+  // STATE
+  // =====================================================
+  const PHASE = { LOBBY: 'Lobby', QUESTION: 'Question', VOTING: 'Voting', REVEAL: 'Reveal', FINISHED: 'Finished' };
+  const OPTION_KEYS = ['A', 'B', 'C', 'D'];
+
+  const state = {
+    phase: PHASE.LOBBY,
+    round: 0,
+    totalRounds: 10,
+    modsEnabled: true,
+    inTiebreaker: false,
+    tiebreakPlayers: [],  // Player IDs in tiebreaker
+
+    players: [],
+    questionPool: [],
+    usedQuestionIds: new Set(),
+
+    // Current question
+    current: null,  // { question, options, correctKey, modifierText }
+    votes: {},      // playerId -> 'A'/'B'/'C'/'D' or null
+    locked: false,
+    revealed: false,
+  };
+
+  // =====================================================
+  // HELPERS
+  // =====================================================
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function uid() {
+    return Math.random().toString(36).slice(2, 9);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function activePlayers() {
+    if (state.inTiebreaker && state.tiebreakPlayers.length > 0) {
+      return state.players.filter(p => state.tiebreakPlayers.includes(p.id));
+    }
+    return state.players;
+  }
+
+  function setPhase(p) {
+    state.phase = p;
+    render();
+  }
+
+  // =====================================================
+  // QUESTION POOL
+  // =====================================================
+  function buildQuestionPool() {
+    const questions = currentPack.questions || [];
+    state.questionPool = shuffle(questions.filter(q => q && q.question && q.answer));
+    state.usedQuestionIds = new Set();
+  }
+
+  function getNextQuestion() {
+    if (state.questionPool.length === 0) buildQuestionPool();
+    
+    const unused = state.questionPool.filter(q => !state.usedQuestionIds.has(q.id));
+    const pick = unused.length > 0 ? unused[0] : state.questionPool[0];
+    
+    state.usedQuestionIds.add(pick.id);
+    return pick;
+  }
+
+  function buildOptionsForQuestion(q) {
+    const need = OPTION_KEYS.length - 1; // 3 wrong answers
+    
+    // PRIORITY: Get distractors from the SAME ANIME first (harder)
+    // Then same TYPE, then random
+    const pool = state.questionPool.filter(x => x.id !== q.id && x.answer && x.answer !== q.answer);
+    
+    // 1. Same anime + same type (hardest - e.g., other Naruto characters)
+    const sameAnimeAndType = pool.filter(x => 
+      x.source && q.source && 
+      x.source.toLowerCase() === q.source.toLowerCase() && 
+      x.type === q.type
+    );
+    
+    // 2. Same anime, any type (still hard - e.g., Naruto locations when asking about Naruto character)
+    const sameAnime = pool.filter(x => 
+      x.source && q.source && 
+      x.source.toLowerCase() === q.source.toLowerCase() &&
+      !sameAnimeAndType.includes(x)
+    );
+    
+    // 3. Same type, different anime (medium - e.g., other anime characters)
+    const sameType = pool.filter(x => 
+      x.type === q.type && 
+      (!x.source || !q.source || x.source.toLowerCase() !== q.source.toLowerCase())
+    );
+    
+    // 4. Random from other categories (easiest)
+    const other = pool.filter(x => 
+      x.type !== q.type && 
+      (!x.source || !q.source || x.source.toLowerCase() !== q.source.toLowerCase())
+    );
+    
+    let distractors = [];
+    
+    // Fill distractors prioritizing difficulty
+    // Try to get 2-3 from same anime, 1 random
+    const shuffledSameAnimeType = shuffle(sameAnimeAndType);
+    const shuffledSameAnime = shuffle(sameAnime);
+    const shuffledSameType = shuffle(sameType);
+    const shuffledOther = shuffle(other);
+    
+    // Take from same anime first (combine both lists)
+    const allSameAnime = [...shuffledSameAnimeType, ...shuffledSameAnime];
+    
+    if (allSameAnime.length >= 2) {
+      // Ideal: 2-3 from same anime
+      const fromSameAnime = Math.min(allSameAnime.length, need - 1); // Leave 1 slot for variety
+      distractors = allSameAnime.slice(0, fromSameAnime).map(x => x.answer);
+    }
+    
+    // Fill remaining with same type (different anime)
+    if (distractors.length < need) {
+      const remaining = need - distractors.length;
+      const moreDistractors = shuffledSameType
+        .filter(x => !distractors.includes(x.answer))
+        .slice(0, remaining)
+        .map(x => x.answer);
+      distractors = [...distractors, ...moreDistractors];
+    }
+    
+    // Fill any remaining with random
+    if (distractors.length < need) {
+      const remaining = need - distractors.length;
+      const moreDistractors = shuffledOther
+        .filter(x => !distractors.includes(x.answer))
+        .slice(0, remaining)
+        .map(x => x.answer);
+      distractors = [...distractors, ...moreDistractors];
+    }
+    
+    // Last resort: use anything available
+    if (distractors.length < need) {
+      const remaining = need - distractors.length;
+      const anyLeft = shuffle(pool)
+        .filter(x => !distractors.includes(x.answer))
+        .slice(0, remaining)
+        .map(x => x.answer);
+      distractors = [...distractors, ...anyLeft];
+    }
+    
+    // Remove duplicates
+    distractors = [...new Set(distractors)].slice(0, need);
+    
+    const all = shuffle([q.answer, ...distractors]);
+    const options = all.map((txt, i) => ({
+      key: OPTION_KEYS[i],
+      text: txt,
+      isCorrect: txt === q.answer
+    }));
+    
+    const correctKey = options.find(o => o.isCorrect)?.key || 'A';
+    return { options, correctKey };
+  }
+
+  // =====================================================
+  // RENDER FUNCTIONS
+  // =====================================================
+  function render() {
+    renderPills();
+    renderQuestion();
+    renderVotes();
+    renderScoreboard();
+    renderButtons();
+  }
+
+  function renderPills() {
+    pillPhase.textContent = state.phase;
+    pillRound.textContent = `${state.round}/${state.totalRounds}${state.inTiebreaker ? ' (Tiebreaker)' : ''}`;
+    pillPack.textContent = currentPack.title || currentPackKey;
+    
+    if (state.current) {
+      if (state.revealed) {
+        questionStatus.textContent = 'Revealed';
+        questionStatus.style.borderColor = 'rgba(34,197,94,.55)';
+      } else if (state.locked) {
+        questionStatus.textContent = 'Votes Locked';
+        questionStatus.style.borderColor = 'rgba(245,158,11,.55)';
+      } else {
+        questionStatus.textContent = 'Voting…';
+        questionStatus.style.borderColor = 'rgba(96,165,250,.55)';
+      }
+    } else {
+      questionStatus.textContent = 'Waiting…';
+      questionStatus.style.borderColor = 'rgba(31,41,55,.75)';
+    }
+  }
+
+  function renderQuestion() {
+    if (!state.current) {
+      qText.innerHTML = 'Open <b>Lobby Setup</b> to begin.';
+      qSource.textContent = 'Source: —';
+      answersGrid.innerHTML = '';
+      modBanner.classList.add('hidden');
+      revealBox.classList.add('hidden');
+      return;
+    }
+
+    qText.textContent = state.current.question.question;
+    qSource.textContent = `Source: ${state.current.question.source || '—'}`;
+
+    // Modifier banner
+    if (state.current.modifierText) {
+      modText.textContent = state.current.modifierText;
+      modBanner.classList.remove('hidden');
+    } else {
+      modBanner.classList.add('hidden');
+    }
+
+    // Answer cards
+    answersGrid.innerHTML = '';
+    state.current.options.forEach(opt => {
+      const card = document.createElement('div');
+      card.className = 'answer-card';
+      if (state.revealed) {
+        card.classList.add(opt.isCorrect ? 'correct' : 'wrong');
+      }
+      card.innerHTML = `
+        <div class="badge">${opt.key}</div>
+        <div class="text">${escapeHtml(opt.text)}</div>
+      `;
+      answersGrid.appendChild(card);
+    });
+
+    // Reveal box
+    if (state.revealed) {
+      const correct = state.current.options.find(o => o.isCorrect);
+      revealAnswer.textContent = `${state.current.correctKey}. ${correct?.text || state.current.question.answer}`;
+      revealBox.classList.remove('hidden');
+    } else {
+      revealBox.classList.add('hidden');
+    }
+  }
+
+  function renderVotes() {
+    voteGrid.innerHTML = '';
+    
+    if (!state.current) return;
+
+    const players = activePlayers();
+    
+    if (state.inTiebreaker) {
+      voteHint.textContent = `Tiebreaker! Only: ${players.map(p => p.name).join(', ')}`;
+    } else {
+      voteHint.textContent = 'Select each player\'s answer choice.';
+    }
+
+    players.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'vote-row';
+
+      const opts = OPTION_KEYS.map(k => 
+        `<option value="${k}" ${state.votes[p.id] === k ? 'selected' : ''}>${k}</option>`
+      ).join('');
+
+      row.innerHTML = `
+        <div class="player-info">
+          <span class="player-name">${escapeHtml(p.name)}</span>
+          <span class="player-pts">${p.points} pts</span>
+        </div>
+        <select data-pid="${p.id}" ${state.locked ? 'disabled' : ''}>
+          <option value="">—</option>
+          ${opts}
+        </select>
+      `;
+
+      const sel = row.querySelector('select');
+      sel.addEventListener('change', () => {
+        state.votes[p.id] = sel.value || null;
+      });
+
+      voteGrid.appendChild(row);
+    });
+  }
+
+  function renderScoreboard() {
+    scoreList.innerHTML = '';
+    
+    const sorted = [...state.players].sort((a, b) => b.points - a.points);
+    const maxPoints = sorted.length > 0 ? sorted[0].points : 0;
+
+    sorted.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'score-item';
+      if (p.points === maxPoints && maxPoints > 0) {
+        item.classList.add('leader');
+      }
+
+      item.innerHTML = `
+        <span class="name">${escapeHtml(p.name)}</span>
+        <div class="pts-controls">
+          <button data-pid="${p.id}" data-action="minus">−</button>
+          <span class="num">${p.points}</span>
+          <button data-pid="${p.id}" data-action="plus">+</button>
+        </div>
+      `;
+
+      // Manual point controls
+      item.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pid = btn.dataset.pid;
+          const action = btn.dataset.action;
+          const player = state.players.find(x => x.id === pid);
+          if (!player) return;
+          
+          if (action === 'plus') player.points += 1;
+          if (action === 'minus') player.points = Math.max(0, player.points - 1);
+          
+          renderScoreboard();
+        });
+      });
+
+      scoreList.appendChild(item);
+    });
+  }
+
+  function renderButtons() {
+    const inLobby = state.phase === PHASE.LOBBY;
+    const hasQuestion = !!state.current;
+
+    btnRevealMod.disabled = !state.modsEnabled || !hasQuestion || state.locked || !!state.current?.modifierText;
+    btnLockVotes.disabled = !hasQuestion || state.locked;
+    btnRevealAnswer.disabled = !state.locked || state.revealed;
+    btnNextQuestion.disabled = !state.revealed;
+    
+    // Hide modifier button if disabled
+    btnRevealMod.style.display = state.modsEnabled ? '' : 'none';
+  }
+
+  // =====================================================
+  // LOBBY
+  // =====================================================
+  function openLobby() {
+    lobbyBackdrop.classList.remove('hidden');
+  }
+
+  function closeLobby() {
+    lobbyBackdrop.classList.add('hidden');
+  }
+
+  function initPackSelect() {
+    packSelect.innerHTML = '';
+    Object.keys(PACKS).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = PACKS[k].title || k;
+      packSelect.appendChild(opt);
+    });
+    packSelect.value = currentPackKey;
+  }
+
+  function renderLobbyNames(count) {
+    lobbyNames.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const wrap = document.createElement('div');
+      wrap.className = 'name-field';
+      wrap.innerHTML = `
+        <span class="label">Player ${i + 1} name</span>
+        <input type="text" value="${state.players[i]?.name || `Player ${i + 1}`}" data-index="${i}" />
+      `;
+      lobbyNames.appendChild(wrap);
+    }
+  }
+
+  function applyLobbyAndStart() {
+    // Load selected pack
+    loadPack(packSelect.value);
+    
+    const count = parseInt(playerCount.value, 10) || 4;
+    state.totalRounds = Math.max(1, parseInt(questionCount.value, 10) || 10);
+    state.modsEnabled = modsToggle.value === 'on';
+
+    // Build players from name inputs
+    const names = lobbyNames.querySelectorAll('input');
+    state.players = [];
+    for (let i = 0; i < count; i++) {
+      const name = names[i]?.value?.trim() || `Player ${i + 1}`;
+      state.players.push({
+        id: uid(),
+        name: name,
+        points: 0
+      });
+    }
+
+    // Reset game state
+    state.round = 0;
+    state.inTiebreaker = false;
+    state.tiebreakPlayers = [];
+    state.current = null;
+    state.votes = {};
+    state.locked = false;
+    state.revealed = false;
+
+    // Build question pool
+    buildQuestionPool();
+
+    // Hide winner box
+    winnerBox.classList.add('hidden');
+
+    // Close lobby and start first question
+    closeLobby();
+    startNextQuestion();
+  }
+
+  // =====================================================
+  // GAME LOGIC
+  // =====================================================
+  function startNextQuestion() {
+    state.round += 1;
+    state.locked = false;
+    state.revealed = false;
+    state.votes = {};
+
+    const q = getNextQuestion();
+    const { options, correctKey } = buildOptionsForQuestion(q);
+
+    state.current = {
+      question: q,
+      options: options,
+      correctKey: correctKey,
+      modifierText: null
+    };
+
+    // Initialize votes
+    activePlayers().forEach(p => {
+      state.votes[p.id] = null;
+    });
+
+    setPhase(PHASE.QUESTION);
+    hintBox.innerHTML = 'Players voting. Host can <b>Reveal Modifier</b> anytime, then <b>Lock Votes</b>.';
+  }
+
+  function revealModifier() {
+    if (!state.modsEnabled || !state.current || state.current.modifierText) return;
+    
+    const modifiers = currentPack.modifiers || [];
+    if (modifiers.length === 0) {
+      hintBox.innerHTML = 'No modifiers in this pack.';
+      return;
+    }
+
+    const pick = modifiers[Math.floor(Math.random() * modifiers.length)];
+    state.current.modifierText = pick;
+    
+    hintBox.innerHTML = '🎲 <b>Modifier revealed!</b> Factor this into the round!';
+    render();
+  }
+
+  function lockVotes() {
+    if (!state.current) return;
+
+    // Check for missing votes
+    const players = activePlayers();
+    const missing = players.filter(p => !state.votes[p.id]);
+    
+    if (missing.length > 0) {
+      hintBox.innerHTML = `⚠️ Missing votes for: <b>${missing.map(p => p.name).join(', ')}</b>`;
+      return;
+    }
+
+    state.locked = true;
+    setPhase(PHASE.VOTING);
+    hintBox.innerHTML = 'Votes locked! Now <b>Reveal Answer</b> to award points.';
+  }
+
+  function revealAnswerFn() {
+    if (!state.locked || !state.current) return;
+
+    state.revealed = true;
+    const correctKey = state.current.correctKey;
+    const modifier = state.current.modifierText;
+
+    // Parse modifier effects
+    const isDouble = modifier && modifier.includes('Double points');
+    const isMinusWrong = modifier && modifier.includes('Wrong answer penalty');
+    const isOnlyTied = modifier && modifier.includes('Only players tied for 1st');
+    const isSkipLeader = modifier && modifier.includes('most points are skipped');
+
+    // Get leader IDs for modifier checks
+    const maxPoints = Math.max(...state.players.map(p => p.points), 0);
+    const leaderIds = state.players.filter(p => p.points === maxPoints).map(p => p.id);
+    const tiedForFirst = leaderIds.length >= 2 ? new Set(leaderIds) : null;
+
+    // Award points to correct answers
+    const players = activePlayers();
+    const winners = [];
+    const losers = [];
+
+    players.forEach(p => {
+      const vote = state.votes[p.id];
+      const isCorrect = vote === correctKey;
+
+      // Skip leader modifier
+      if (isSkipLeader && leaderIds.includes(p.id)) {
+        return; // Skip scoring for leaders
+      }
+
+      // Only tied for 1st can score
+      if (isOnlyTied && tiedForFirst && !tiedForFirst.has(p.id)) {
+        return; // Not tied for first, can't score
+      }
+
+      if (isCorrect) {
+        const points = isDouble ? 2 : 1;
+        p.points += points;
+        winners.push({ name: p.name, points });
+      } else {
+        if (isMinusWrong) {
+          p.points = Math.max(0, p.points - 1);
+          losers.push(p.name);
+        }
+      }
+    });
+
+    setPhase(PHASE.REVEAL);
+
+    // Build result message
+    let msg = '';
+    if (winners.length > 0) {
+      if (isDouble) {
+        msg = `✓ Correct: <b>${winners.map(w => w.name).join(', ')}</b> (+2 points each!). `;
+      } else {
+        msg = `✓ Correct: <b>${winners.map(w => w.name).join(', ')}</b> (+1 point). `;
+      }
+    } else {
+      msg = 'No one got it right! ';
+    }
+
+    if (isMinusWrong && losers.length > 0) {
+      msg += `Wrong answers: <b>${losers.join(', ')}</b> (-1 point). `;
+    }
+
+    if (isSkipLeader && leaderIds.length > 0) {
+      const skippedNames = state.players.filter(p => leaderIds.includes(p.id)).map(p => p.name);
+      msg += `(Leaders skipped: ${skippedNames.join(', ')}) `;
+    }
+
+    if (isOnlyTied && tiedForFirst) {
+      msg += `(Only tied players could score) `;
+    }
+
+    msg += 'Click <b>Next Question</b>.';
+    hintBox.innerHTML = msg;
+  }
+
+  function nextStep() {
+    if (!state.revealed) return;
+
+    // Check if we've completed all rounds
+    if (state.round >= state.totalRounds) {
+      checkWinner();
+      return;
+    }
+
+    // Continue to next question
+    startNextQuestion();
+  }
+
+  function checkWinner() {
+    const maxPoints = Math.max(...state.players.map(p => p.points), 0);
+    const leaders = state.players.filter(p => p.points === maxPoints);
+
+    if (leaders.length === 1) {
+      // We have a winner!
+      declareWinner(leaders[0]);
+    } else if (leaders.length > 1) {
+      // Tie! Start tiebreaker
+      startTiebreaker(leaders);
+    }
+  }
+
+  function declareWinner(player) {
+    setPhase(PHASE.FINISHED);
+    winnerName.textContent = `${player.name} (${player.points} pts)`;
+    winnerBox.classList.remove('hidden');
+    hintBox.innerHTML = `🏆 <b>${player.name}</b> wins with <b>${player.points}</b> points! Click <b>Restart</b> to play again.`;
+    state.inTiebreaker = false;
+    state.tiebreakPlayers = [];
+  }
+
+  function startTiebreaker(tiedPlayers) {
+    state.inTiebreaker = true;
+    state.tiebreakPlayers = tiedPlayers.map(p => p.id);
+    state.totalRounds += 1;  // Add one more round
+
+    hintBox.innerHTML = `⚔️ <b>Tiebreaker!</b> ${tiedPlayers.map(p => p.name).join(' vs ')} at ${tiedPlayers[0].points} pts. Sudden death round!`;
+    
+    // Start tiebreaker question
+    startNextQuestion();
+  }
+
+  // =====================================================
+  // EVENT HANDLERS
+  // =====================================================
+  btnLobby.addEventListener('click', openLobby);
+  btnCloseLobby.addEventListener('click', closeLobby);
+  lobbyBackdrop.addEventListener('click', (e) => {
+    if (e.target === lobbyBackdrop) closeLobby();
   });
-  const norm=normalizePackKey(state.packKey,packs);
-  state.packKey=norm||keys[0]||'anime';
-  packSelect.value=state.packKey;
-  pillPack.textContent=`Pack: ${(packs[state.packKey]&&packs[state.packKey].title)||state.packKey}`;
-}
-function getPack(){
-  const packs=window.TRIVIA_PACKS||{};
-  const key=normalizePackKey(state.packKey||packSelect.value,packs)||normalizePackKey(packSelect.value,packs);
-  if(key && key!==state.packKey) state.packKey=key;
-  return packs[state.packKey];
-}
 
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function renderNameFields(){const n=parseInt(playerCountSel.value,10);nameFields.innerHTML='';for(let i=1;i<=n;i++){const wrap=document.createElement('div');wrap.className='namefield';
-wrap.innerHTML=`<div class="label">Player ${i} name</div><input type="text" value="${escapeHtml(state.players[i-1]?.name||`Player ${i}`)}" data-index="${i-1}" />`;nameFields.appendChild(wrap);}
-nameFields.querySelectorAll('input').forEach(inp=>{inp.addEventListener('input',()=>{const idx=parseInt(inp.getAttribute('data-index'),10);
-while(state.players.length<n)state.players.push({id:uid(),name:`Player ${state.players.length+1}`,points:0,active:true});
-state.players[idx].name=inp.value.trim()||`Player ${idx+1}`;save();renderScoreboard();});});}
-function applyLobbyToState(){
-  const packs=window.TRIVIA_PACKS||{};
-  const n=parseInt(playerCountSel.value,10);
-  const qn=clamp(parseInt(questionCountInp.value,10)||1,1,999);
-  const chosen=normalizePackKey(packSelect.value,packs);
-  state.packKey=chosen||normalizePackKey(state.packKey,packs)||Object.keys(packs)[0]||'anime';
-  packSelect.value=state.packKey;
-  state.modsEnabled=!!modsEnabledChk.checked;
-  state.mainQuestions=qn;
-  const players=[];
-  for(let i=0;i<n;i++){
-    const inp=nameFields.querySelector(`input[data-index="${i}"]`);
-    const name=(inp&&inp.value?inp.value:`Player ${i+1}`).trim()||`Player ${i+1}`;
-    players.push({id:(state.players[i]&&state.players[i].id)||uid(),name,points:(state.players[i]&&state.players[i].points)||0,active:true});
+  playerCount.addEventListener('change', () => {
+    renderLobbyNames(parseInt(playerCount.value, 10) || 4);
+  });
+
+  btnStartGame.addEventListener('click', applyLobbyAndStart);
+
+  btnRevealMod.addEventListener('click', revealModifier);
+  btnLockVotes.addEventListener('click', lockVotes);
+  btnRevealAnswer.addEventListener('click', revealAnswerFn);
+  btnNextQuestion.addEventListener('click', nextStep);
+
+  btnRestart.addEventListener('click', () => {
+    state.phase = PHASE.LOBBY;
+    state.round = 0;
+    state.current = null;
+    state.votes = {};
+    state.locked = false;
+    state.revealed = false;
+    state.inTiebreaker = false;
+    state.tiebreakPlayers = [];
+    state.players.forEach(p => p.points = 0);
+    winnerBox.classList.add('hidden');
+    render();
+    openLobby();
+  });
+
+  // =====================================================
+  // INIT
+  // =====================================================
+  function init() {
+    initPackSelect();
+    renderLobbyNames(4);
+    render();
+    openLobby();  // Auto-open lobby on page load
   }
-  state.players=players;
-  state.alarmVolume=clamp((parseInt(alarmVol.value,10)||0)/100,0,1);
-}
 
-const OPTION_KEYS_4=['A','B','C','D'],OPTION_KEYS_6=['A','B','C','D','E','F'];
-const MODS={
-DOUBLE:"Double points on correct answer (+2 instead of +1).",
-MINUS_WRONG:"Wrong answer penalty (-1 point on wrong answer).",
-ONLY_TIED:"Only players tied for 1st can score this round.",
-PLUS_ANSWERS:"Add 2 additional answers (6 options total).",
-BET:"Bet on who gets it right (cannot bet on yourself).",
-SKIP_LEADER:"Player(s) with the most points are skipped this round."
-};
-
-function buildQuestionPool(){const pack=getPack();const qs=(pack?.questions||[]).filter(q=>q&&q.question&&q.answer);state.questionPool=shuffle(qs);state.usedQuestionIds=new Set();}
-function nextQuestionFromPool(){if(state.questionPool.length===0)buildQuestionPool();const pool=state.questionPool;
-const unused=pool.filter(q=>!state.usedQuestionIds.has(q.id));const pick=(unused.length?unused:pool)[0];state.usedQuestionIds.add(pick.id);
-const idx=pool.findIndex(q=>q.id===pick.id);if(idx>=0){const sp=pool.splice(idx,1)[0];pool.push(sp);}return pick;}
-function buildOptionsForQuestion(q,useSix){
-  const keys=useSix?OPTION_KEYS_6:OPTION_KEYS_4;
-  const need=keys.length-1;
-  const pool=state.questionPool.filter(x=>x.id!==q.id&&x.answer);
-  
-  // First try to get distractors of the same type
-  const sameType=pool.filter(x=>x.type&&x.type===q.type);
-  let distract=[];
-  
-  if(sameType.length>=need){
-    // Enough same-type answers available
-    distract=shuffle(sameType).slice(0,need).map(x=>x.answer);
-  }else{
-    // Not enough same-type, use what we have then fill from other types
-    distract=shuffle(sameType).map(x=>x.answer);
-    const otherTypes=pool.filter(x=>!x.type||x.type!==q.type);
-    const remaining=need-distract.length;
-    distract=[...distract,...shuffle(otherTypes).slice(0,remaining).map(x=>x.answer)];
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
-  
-  // Remove duplicates and ensure we have enough unique answers
-  distract=[...new Set(distract)].slice(0,need);
-  
-  const all=[q.answer,...distract];
-  const shuffled=shuffle(all);
-  const options=shuffled.map((txt,i)=>({key:keys[i],text:txt,isCorrect:txt===q.answer}));
-  const correctKey=options.find(o=>o.isCorrect)?.key||keys[0];
-  return {options,correctKey};
-}
-function getLeaderIds(){const max=Math.max(...state.players.map(p=>p.points),0);return state.players.filter(p=>p.points===max).map(p=>p.id);}
-function getTiedTopIds(){const max=Math.max(...state.players.map(p=>p.points),0);const tied=state.players.filter(p=>p.points===max);return tied.length>=2?tied.map(p=>p.id):[];}
 
-function startNewRound(){state.round+=1;state.locked=false;state.revealed=false;state.votes={};state.current=null;
-const q=nextQuestionFromPool();const {options,correctKey}=buildOptionsForQuestion(q,false);
-state.current={q,options,correctKey,modifierText:null,skipIds:new Set(),bets:null};
-state.players.forEach(p=>state.votes[p.id]=null);
-state.phase=state.tiebreakActive?PHASE.TIEBREAK:PHASE.QUESTION;save();render();}
-function revealRandomModifier(){if(!state.modsEnabled||!state.current||state.current.modifierText)return;const pack=getPack();
-const pool=(pack?.modifiers||[]).length?pack.modifiers:Object.values(MODS);const pick=pool[Math.floor(Math.random()*pool.length)];
-state.current.modifierText=pick;
-if(pick===MODS.PLUS_ANSWERS){const {options,correctKey}=buildOptionsForQuestion(state.current.q,true);state.current.options=options;state.current.correctKey=correctKey;state.players.forEach(p=>state.votes[p.id]=null);}
-if(pick===MODS.SKIP_LEADER){const leaders=getLeaderIds();state.current.skipIds=new Set(leaders);leaders.forEach(pid=>state.votes[pid]='SKIP');}
-if(pick===MODS.BET){state.current.bets={};}
-save();render();}
-function lockVotes(){if(!state.current)return;const missing=state.players.filter(p=>!state.current.skipIds.has(p.id)).filter(p=>state.votes[p.id]===null);
-if(missing.length){playAlarm();alert(`Missing votes for: ${missing.map(p=>p.name).join(', ')}`);return;}
-if(state.current.modifierText===MODS.BET){const bets=state.current.bets||{};for(const pid of Object.keys(bets)){const b=bets[pid];const pl=state.players.find(p=>p.id===pid);if(!pl)continue;
-const amt=clamp(parseInt(b.amount,10)||0,0,9999);if(amt<=0)continue;pl.points=Math.max(0,pl.points-amt);}}
-state.locked=true;state.phase=PHASE.VOTING;save();render();}
-function revealAnswerFn(){if(!state.locked||!state.current)return;state.revealed=true;state.phase=PHASE.REVEAL;
-const correctKey=state.current.correctKey,mod=state.current.modifierText;
-const double=(mod===MODS.DOUBLE),minusWrong=(mod===MODS.MINUS_WRONG),onlyTied=(mod===MODS.ONLY_TIED);
-const tiedTop=new Set(getTiedTopIds());const gotRight=new Set();
-state.players.forEach(p=>{if(state.current.skipIds.has(p.id))return;if(state.votes[p.id]===correctKey)gotRight.add(p.id);});
-state.players.forEach(p=>{if(state.current.skipIds.has(p.id))return;const voted=state.votes[p.id];const isRight=voted===correctKey;
-if(onlyTied&&!tiedTop.has(p.id))return;if(isRight)p.points+=double?2:1;else if(minusWrong)p.points=Math.max(0,p.points-1);});
-if(mod===MODS.BET){const bets=state.current.bets||{};for(const bettorId of Object.keys(bets)){const b=bets[bettorId];if(!b||!b.targetId)continue;
-const bettor=state.players.find(p=>p.id===bettorId);if(!bettor)continue;const amt=clamp(parseInt(b.amount,10)||0,0,9999);if(amt<=0)continue;
-if(b.targetId===bettorId)continue;if (gotRight.has(b.targetId)) bettor.points += (amt * 3);}}
-stopAlarm();save();render();checkWinner();}
-function checkWinner(){const doneMain=(!state.tiebreakActive&&state.round>=state.roundTarget);if(!doneMain||!state.revealed)return;
-const max=Math.max(...state.players.map(p=>p.points),0);const top=state.players.filter(p=>p.points===max);
-if(top.length===1){winnerText.textContent=`Winner: ${top[0].name} (${top[0].points} pts)`;state.tiebreakActive=false;state.eligiblePlayerIds=null;save();render();return;}
-state.tiebreakActive=true;state.eligiblePlayerIds=top.map(p=>p.id);winnerText.textContent=`Tie at ${max} pts: ${top.map(p=>p.name).join(', ')}. Tiebreak continues.`;save();render();}
-function nextStep(){if(!state.revealed){playAlarm();return;}
-if(state.tiebreakActive){const max=Math.max(...state.players.map(p=>p.points),0);const top=state.players.filter(p=>p.points===max);if(top.length===1){winnerText.textContent=`Winner: ${top[0].name} (${top[0].points} pts)`;state.tiebreakActive=false;state.eligiblePlayerIds=null;save();render();return;}}
-else{if(state.round>=state.roundTarget)return;}
-startNewRound();}
-
-function renderPills(){const pack=getPack();pillPack.textContent=`Pack: ${pack?.title||state.packKey}`;pillPhase.textContent=`Phase: ${state.phase}`;pillRound.textContent=`Round: ${state.round} / ${state.roundTarget||0}`;}
-function renderScoreboard(){scoreList.innerHTML='';state.players.slice().sort((a,b)=>b.points-a.points).forEach(p=>{const row=document.createElement('div');row.className='scoreItem';
-row.innerHTML=`<div class="name">${escapeHtml(p.name)}</div><div class="pts">${p.points} pts</div>`;scoreList.appendChild(row);});}
-function renderVotes(){voteGrid.innerHTML='';const optionKeys=state.current?.options?.map(o=>o.key)||OPTION_KEYS_4;
-const eligible=state.tiebreakActive&&state.eligiblePlayerIds?new Set(state.eligiblePlayerIds):null;
-skipNote.textContent=(state.current?.modifierText===MODS.SKIP_LEADER&&state.current.skipIds.size)?`Skipped: ${state.players.filter(p=>state.current.skipIds.has(p.id)).map(p=>p.name).join(', ')}`:'';
-state.players.forEach(p=>{if(eligible&&!eligible.has(p.id))return;const isSkipped=state.current?.skipIds?.has(p.id);
-const row=document.createElement('div');row.className='voteRow';
-let opts=isSkipped?`<option value="SKIP">SKIP</option>`:`<option value="" ${(state.votes[p.id]===null)?'selected':''}>—</option>`+optionKeys.map(k=>`<option value="${k}" ${(state.votes[p.id]===k)?'selected':''}>${k}</option>`).join('');
-row.innerHTML=`<div class="who"><div class="pname">${escapeHtml(p.name)}</div><div class="ppts">${p.points} pts</div></div><select data-pid="${p.id}" ${state.locked?'disabled':''}>${opts}</select>`;
-voteGrid.appendChild(row);const sel=row.querySelector('select');sel.addEventListener('change',()=>{state.votes[p.id]=sel.value||null;save();});
-if(state.current?.modifierText===MODS.BET&&!isSkipped){const bet=document.createElement('div');bet.className='voteRow';bet.style.gridTemplateColumns='1fr 120px';
-bet.innerHTML=`<div class="who"><div class="pname">Bet: ${escapeHtml(p.name)}</div><div class="ppts">Stake</div></div>
-<div style="display:flex;gap:8px;">
-<select data-bettor="${p.id}" class="betTarget" style="flex:1;"><option value="">Target</option>${state.players.filter(x=>x.id!==p.id).map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('')}</select>
-<input data-bettor="${p.id}" class="betAmt" type="number" min="0" value="0" style="width:88px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.25);color:rgba(255,255,255,.92);" />
-</div>`;voteGrid.appendChild(bet);
-const t=bet.querySelector('.betTarget'),a=bet.querySelector('.betAmt');const ex=state.current.bets?.[p.id]||{targetId:'',amount:0};t.value=ex.targetId||'';a.value=ex.amount||0;
-const upd=()=>{if(!state.current.bets)state.current.bets={};const amt=clamp(parseInt(a.value,10)||0,0,p.points);a.value=amt;state.current.bets[p.id]={targetId:t.value||'',amount:amt};save();};
-t.addEventListener('change',upd);a.addEventListener('input',upd);if(state.locked){t.disabled=true;a.disabled=true;}}});
-voteHint.textContent=(state.tiebreakActive&&eligible)?`Tiebreak voting — only: ${state.players.filter(p=>eligible.has(p.id)).map(p=>p.name).join(', ')}`:`Enter each player's answer (${optionKeys.join('–')}). Keep this panel off-stream.`;}
-function renderQuestion(){if(!state.current){qText.textContent='Start the game to begin.';qSource.textContent='Source: —';qState.textContent='Waiting…';answersEl.innerHTML='';modBanner.classList.add('hidden');revealBox.classList.add('hidden');return;}
-qText.textContent=state.current.q.question;qSource.textContent=`Source: ${state.current.q.source}`;qState.textContent=state.revealed?'Revealed':(state.locked?'Votes locked':'Voting…');
-if(state.current.modifierText){modText.textContent=state.current.modifierText;modBanner.classList.remove('hidden');}else modBanner.classList.add('hidden');
-answersEl.innerHTML='';state.current.options.forEach(opt=>{const d=document.createElement('div');d.className='answer';
-if(state.revealed)d.classList.add(opt.isCorrect?'correct':'wrong');
-d.innerHTML=`<div class="badge">${opt.key}</div><div class="txt">${escapeHtml(opt.text)}</div>`;answersEl.appendChild(d);});
-if(state.revealed){revealAnswerText.textContent=`${state.current.correctKey}. ${state.current.options.find(o=>o.isCorrect)?.text||state.current.q.answer}`;revealBox.classList.remove('hidden');}
-else revealBox.classList.add('hidden');}
-function renderButtons(){const inLobby=state.phase===PHASE.LOBBY;lobbyCard.style.display=inLobby?'':'none';voteCard.style.display=inLobby?'none':'';
-btnRevealModifier.disabled=!state.modsEnabled||!state.current||state.locked||!!state.current?.modifierText;
-btnLockVotes.disabled=!state.current||state.locked;btnRevealAnswer.disabled=!state.locked||state.revealed;btnNextQuestion.disabled=!state.revealed;
-btnRevealModifier.style.display=state.modsEnabled?'':'none';}
-function render(){renderPills();renderQuestion();renderButtons();renderScoreboard();if(state.current)renderVotes();}
-function resetToLobby(){stopAlarm();state.phase=PHASE.LOBBY;state.round=0;state.roundTarget=0;state.tiebreakActive=false;state.eligiblePlayerIds=null;
-state.players=[];state.questionPool=[];state.usedQuestionIds=new Set();state.current=null;state.votes={};state.locked=false;state.revealed=false;save();render();}
-function resetGameMid(){
-  stopAlarm();
-
-  // keep lobby settings + player names, just reset the run
-  state.round = 0;
-  state.roundTarget = state.mainQuestions;
-  state.tiebreakActive = false;
-  state.eligiblePlayerIds = null;
-
-  // reset scoring + current question state
-  state.players.forEach(p => { p.points = 0; });
-  state.questionPool = [];
-  state.usedQuestionIds = new Set();
-  state.current = null;
-  state.votes = {};
-  state.locked = false;
-  state.revealed = false;
-
-  // back to lobby so host can start clean
-  state.phase = PHASE.LOBBY;
-
-  save();
-  render();
-}
-function startGame(){
-  applyLobbyToState();
-  const packs=window.TRIVIA_PACKS||{};
-  let pack=packs[state.packKey];
-  if(!pack){
-    const first=Object.keys(packs)[0];
-    state.packKey=first||'anime';
-    packSelect.value=state.packKey;
-    pack=packs[state.packKey];
-  }
-  if(!pack || !(pack.questions||[]).length){
-    playAlarm();
-    alert(`This pack has no questions yet. (Selected: ${state.packKey||'—'})`);
-    return;
-  }
-  state.players.forEach(p=>p.points=0);
-  state.round=0;
-  state.roundTarget=clamp(state.mainQuestions,1,999);
-  buildQuestionPool();
-  state.usedQuestionIds=new Set();
-  state.tiebreakActive=false;
-  state.eligiblePlayerIds=null;
-  winnerText.textContent='—';
-  startNewRound();
-}
-load();initPacks();
-playerCountSel.value=String(clamp(state.players.length||parseInt(playerCountSel.value,10),1,8));
-questionCountInp.value=String(state.mainQuestions||10);modsEnabledChk.checked=!!state.modsEnabled;
-alarmVol.value=String(Math.round(clamp(state.alarmVolume||.6,0,1)*100));alarmVolLabel.textContent=`${alarmVol.value}%`;
-renderNameFields();
-playerCountSel.addEventListener('change',()=>{const n=parseInt(playerCountSel.value,10);while(state.players.length<n)state.players.push({id:uid(),name:`Player ${state.players.length+1}`,points:0,active:true});
-state.players=state.players.slice(0,n);renderNameFields();save();});
-packSelect.addEventListener('change',()=>{state.packKey=packSelect.value;save();renderPills();});
-alarmVol.addEventListener('input',()=>{alarmVolLabel.textContent=`${alarmVol.value}%`;state.alarmVolume=clamp((parseInt(alarmVol.value,10)||0)/100,0,1);save();});
-btnPreviewAlarm.addEventListener('click',()=>{playAlarm();setTimeout(()=>stopAlarm(),1200);});
-btnStartGame.addEventListener('click',startGame);
-btnResetAll.addEventListener('click',resetToLobby);
-btnResetGame.addEventListener('click',()=>{ if(confirm('Reset the current game and return to lobby?')) resetGameMid(); });
-btnRevealModifier.addEventListener('click',()=>revealRandomModifier());
-btnLockVotes.addEventListener('click',()=>lockVotes());
-btnRevealAnswer.addEventListener('click',()=>revealAnswerFn());
-btnNextQuestion.addEventListener('click',()=>nextStep());
-render();
 })();

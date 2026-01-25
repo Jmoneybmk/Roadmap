@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Debate Mode — Cards</title>
+  <title>BD — Debate Mode</title>
   <link rel="stylesheet" href="debate_styles.css" />
 </head>
 <body>
@@ -64,7 +64,7 @@
         <h3 class="section-title">Players</h3>
         <div class="players" id="playersWrap"></div>
         <div class="muted small" style="margin-top:8px;">
-          Tip: Empty name = disabled slot (won’t appear in dropdowns or scoring).
+          Tip: Empty name = disabled slot (won't appear in dropdowns or scoring).
         </div>
 
         <div class="section-split"></div>
@@ -124,13 +124,13 @@
     </section>
   </main>
 
-  <!-- LOBBY MODAL -->
-  <div class="modal-backdrop hidden" id="lobbyBackdrop">
+  <!-- LOBBY MODAL (Auto-opens on page load) -->
+  <div class="modal-backdrop" id="lobbyBackdrop">
     <div class="modal">
       <div class="modal-head">
         <div>
           <div class="modal-title">Lobby Setup</div>
-          <div class="muted small">Choose player count, names, rounds, and modifier frequency.</div>
+          <div class="muted small">Choose pack, players, rounds, and modifier frequency.</div>
         </div>
         <button class="btn" id="btnCloseLobby">Close</button>
       </div>
@@ -138,18 +138,28 @@
       <div class="modal-body">
         <div class="lobby-grid">
           <div class="field">
+            <label>Pack</label>
+            <select id="lobbyPackSelect" class="select"></select>
+          </div>
+
+          <div class="field">
             <label>Players (2–8)</label>
             <select id="lobbyPlayerCount" class="select"></select>
           </div>
 
           <div class="field">
-            <label>Rounds</label>
+            <label>Total Rounds</label>
             <input id="lobbyRounds" class="input" type="number" min="1" max="100" value="10" />
           </div>
+        </div>
 
+        <div class="lobby-grid" style="margin-top:10px;">
           <div class="field">
-            <label>Modifier every _ rounds (0 = off)</label>
-            <input id="lobbyModEvery" class="input" type="number" min="0" max="20" value="3" />
+            <label>Modifiers</label>
+            <select id="lobbyModToggle" class="select">
+              <option value="on" selected>Enabled (Host reveals when ready)</option>
+              <option value="off">Disabled</option>
+            </select>
           </div>
         </div>
 
@@ -159,7 +169,7 @@
 
       <div class="modal-foot">
         <div class="muted small" id="lobbyNote">Tip: You can rename players later from their cards.</div>
-        <button class="btn primary" id="btnStartGame">Start Game</button>
+        <button class="btn primary" id="btnStartGame">Start Debate Mode</button>
       </div>
     </div>
   </div>
@@ -178,7 +188,7 @@
       <div class="modal-body" id="voteBody"></div>
 
       <div class="modal-foot">
-        <div class="muted small" id="voteHint">Tip: If a player slot is blank, they won’t show here.</div>
+        <div class="muted small" id="voteHint">Tip: If a player slot is blank, they won't show here.</div>
         <button class="btn primary" id="btnAwardPoint">Award Points</button>
       </div>
     </div>

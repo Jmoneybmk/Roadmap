@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hi / Lo — Anime Ratings</title>
+  <link rel="stylesheet" href="hilo_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="../index.html" aria-label="Back to main menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div style="min-width:0">
+          <div class="title">Hi / Lo</div>
+          <div class="subtitle">Guess if Anime B is rated higher or lower than Anime A</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="pill">Pack: <b id="packLabel">Anime</b></div>
+      <div class="pill">Mode: <b id="modeLabel">Singles</b></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- LOBBY -->
+    <section id="lobby" class="card">
+      <div class="card-head">
+        <h2>Lobby Setup</h2>
+        <p class="muted">Set players, choose mode, then start the game.</p>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>Mode</label>
+          <select id="modeSelect">
+            <option value="singles" selected>Singles (Every player for themselves)</option>
+            <option value="teams">Teams (2 teams, captains auto-selected)</option>
+          </select>
+          <div class="help">Teams mode randomly assigns players into Team A / Team B and picks a captain for each.</div>
+        </div>
+
+        <div class="field">
+          <label>Players (2–8)</label>
+          <input id="playerCount" type="number" min="2" max="8" value="4" />
+          <div class="help">Tip: You can rename players anytime during the game.</div>
+        </div>
+
+        <div class="field">
+          <label>Starting Points</label>
+          <input id="startPoints" type="number" min="1" max="999" value="10" />
+        </div>
+
+        <div class="field">
+          <label>Modifiers</label>
+          <select id="modsToggle">
+            <option value="on" selected>On (Host reveals when ready)</option>
+            <option value="off">Off</option>
+          </select>
+          <div class="help">Host can reveal a random modifier before any guess.</div>
+        </div>
+
+        <div class="field">
+          <label>Total Matches</label>
+          <input id="matchesInput" type="number" min="1" max="99" value="3" />
+          <div class="help">Each match: all players take turns guessing until they lose. Game ends after this many matches.</div>
+        </div>
+
+        <div class="field">
+          <label>Loan Rule</label>
+          <div class="toggleRow">
+            <input id="loanToggle" type="checkbox" checked />
+            <span>Allow host to loan +3 points when someone hits 0</span>
+          </div>
+          <div class="help">Loans become debt. Debts are repaid at the end of each match.</div>
+        </div>
+      </div>
+
+      <div class="playersBox">
+        <div class="playersHead">
+          <h3>Player Names</h3>
+          <span class="muted small">Blank names won't be included.</span>
+        </div>
+        <div id="playerInputs" class="playerInputs"></div>
+      </div>
+
+      <div class="actions">
+        <button id="btnLoadData" class="btn ghost">Reload Data</button>
+        <button id="btnStart" class="btn primary">Start Game</button>
+      </div>
+
+      <div id="lobbyStatus" class="status muted"></div>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="game hidden">
+      <section class="leftCol">
+        <div class="card roundCard">
+          <div class="roundTop">
+            <div>
+              <div class="kicker">Match</div>
+              <div class="big" id="matchLabel">1 / 3</div>
+            </div>
+            <div class="turnBox">
+              <div class="kicker">Current Player</div>
+              <div class="turnName" id="turnName">—</div>
+              <div class="turnMeta muted" id="turnMeta">—</div>
+            </div>
+            <div class="controls">
+              <button id="btnResetMatch" class="btn ghost">Reset Game</button>
+            </div>
+          </div>
+
+          <div id="modifierBar" class="modifierBar hidden">
+            <div class="badge">MODIFIER</div>
+            <div class="modifierText" id="modifierText">—</div>
+            <button id="btnClearModifier" class="btn tiny">Clear</button>
+          </div>
+        </div>
+
+        <div class="match">
+          <div class="card animeCard" id="cardA">
+            <div class="sideLabel">Anime A (Reference)</div>
+            <div class="posterWrap"><img id="imgA" alt="Anime A poster" /></div>
+            <div class="titleText" id="titleA">—</div>
+            <div class="meta muted" id="metaA">—</div>
+            <!-- ALWAYS SHOW ANIME A's SCORE -->
+            <div class="scoreRow" id="scoreRowA">
+              <span class="scoreLabel">Score</span>
+              <span class="scoreValue" id="scoreA">—</span>
+            </div>
+          </div>
+
+          <div class="vs">
+            <div class="vsBubble">VS</div>
+            <div class="small muted" id="hintText">Is Anime B rated higher or lower?</div>
+          </div>
+
+          <div class="card animeCard" id="cardB">
+            <div class="sideLabel">Anime B (Guess)</div>
+            <div class="posterWrap"><img id="imgB" alt="Anime B poster" /></div>
+            <div class="titleText" id="titleB">—</div>
+            <div class="meta muted" id="metaB">—</div>
+            <!-- ONLY SHOW AFTER REVEAL -->
+            <div class="scoreRow hidden" id="scoreRowB">
+              <span class="scoreLabel">Score</span>
+              <span class="scoreValue" id="scoreB">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card actionCard">
+          <div class="actionGrid">
+            <div class="field">
+              <label>Bet Amount</label>
+              <input id="betAmount" type="number" min="1" value="1" />
+              <div class="help" id="betHelp">Bet up to your current points.</div>
+            </div>
+
+            <div class="field">
+              <label>Pick</label>
+              <div class="pickRow">
+                <button id="btnPickHi" class="btn">HI ↑</button>
+                <button id="btnPickLo" class="btn">LO ↓</button>
+              </div>
+              <div class="help">HI = B > A • LO = B < A</div>
+            </div>
+
+            <div class="field">
+              <label>Actions</label>
+              <div class="pickRow">
+                <button id="btnReveal" class="btn primary" disabled>Reveal</button>
+                <button id="btnNext" class="btn" disabled>Next</button>
+                <button id="btnModifier" class="btn ghost">Reveal Modifier</button>
+              </div>
+              <div class="help" id="phaseHelp">Pick HI or LO, then Reveal.</div>
+            </div>
+          </div>
+
+          <div id="resultBar" class="resultBar hidden"></div>
+        </div>
+      </section>
+
+      <section class="rightCol">
+        <div class="card scoreboard">
+          <div class="scoreHead">
+            <h3>Scoreboard</h3>
+            <div class="muted small" id="scoreNote">Click a name to edit.</div>
+          </div>
+
+          <div id="teamsBox" class="teamsBox hidden"></div>
+          <div id="playersBoxGame" class="playersBoxGame"></div>
+
+          <div class="debtRow muted" id="debtRow"></div>
+        </div>
+
+        <div class="card usedCard">
+          <h3>Used Pool</h3>
+          <div class="muted small">Anime entries used this game (no repeats until reset).</div>
+          <div id="usedList" class="usedList"></div>
+          <div class="usedActions">
+            <button id="btnClearUsed" class="btn ghost">Clear Used Pool</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- WINNER MODAL -->
+    <div id="winnerModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modalCard">
+        <h2 id="winnerTitle">Winner</h2>
+        <p id="winnerText" class="muted">—</p>
+        <div class="modalActions">
+          <button id="btnNextMatch" class="btn primary hidden">Next Match</button>
+          <button id="btnCloseWinner" class="btn ghost">Close</button>
+        </div>
+      </div>
+      <div class="modalBackdrop"></div>
+    </div>
+  </main>
+
+  <script src="hilo_data.js"></script>
+  <script src="hilo_app.js"></script>
+</body>
+</html>

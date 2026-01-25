@@ -394,6 +394,7 @@ window.DRAFT_PACKS = {
       { name: "Appa", anime: "Avatar (ATLA + Korra)" },
       { name: "Momo", anime: "Avatar (ATLA + Korra)" },
       { name: "Fire Lord Ozai", anime: "Avatar (ATLA + Korra)" },
+      { name: "Avatar Roku", anime: "Avatar (ATLA + Korra)" },
       { name: "Korra", anime: "Avatar (ATLA + Korra)" },
       { name: "Asami Sato", anime: "Avatar (ATLA + Korra)" },
       { name: "Mako", anime: "Avatar (ATLA + Korra)" },

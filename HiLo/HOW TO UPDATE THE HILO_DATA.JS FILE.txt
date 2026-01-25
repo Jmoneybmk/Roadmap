@@ -1,0 +1,4 @@
+1. In the main folder, where the index.html file is located. Right click and select "Open in Terminal"
+2. Run the following command: node .\HiLo\jikan_pull.js
+3. Wait until the system prints "✅ Wrote JS wrapper to E:\The SB Show\Anime Talk\anime-debate-board\HiLo\hilo_data.js".
+4. Start the game.

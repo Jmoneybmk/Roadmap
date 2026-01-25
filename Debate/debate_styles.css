@@ -347,6 +347,19 @@ h2{margin:0;font-size:16px;font-weight:950}
 .option .assign select{
   flex:1;
 }
+.option .assign-label{
+  font-size:13px;
+  line-height:1.4;
+}
+.option .assign-to{
+  color:rgba(229,231,235,.65);
+  font-weight:800;
+}
+.option .assign-name{
+  color:#22c55e;
+  font-weight:950;
+  margin-left:6px;
+}
 
 /* modals */
 .modal-backdrop{

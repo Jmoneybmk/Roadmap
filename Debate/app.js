@@ -1,17 +1,34 @@
-// debate_v2_app.js
+// debate_app.js - Updated with auto-assign, auto-points, and modifier toggle
 (() => {
-  const DATA = window.ANIME_DEBATE_DATA || {};
-  
-  // Data is stored in packs - combine all active packs
-  // For now, use the anime pack as the primary source
-  const animePack = DATA.packs?.anime || {};
-  const ALL_PROMPTS = Array.isArray(animePack.prompts) ? animePack.prompts.slice() : [];
-  const ALL_CHARS = Array.isArray(animePack.characters) ? animePack.characters.slice() : [];
-  const ALL_MODS = Array.isArray(animePack.modifiers) ? animePack.modifiers.slice() : [];
+  'use strict';
 
-  // -----------------------------
-  // DOM
-  // -----------------------------
+  // =====================================================
+  // PACK SYSTEM
+  // =====================================================
+  const DATA = window.ANIME_DEBATE_DATA || {};
+  const PACKS = DATA.packs || {};
+  let currentPackKey = 'anime';
+  let currentPack = PACKS[currentPackKey] || {};
+
+  // Active pools
+  let ALL_PROMPTS = [];
+  let ALL_CHARS = [];
+  let ALL_MODS = [];
+
+  function loadPack(key) {
+    currentPackKey = key;
+    currentPack = PACKS[key] || PACKS.anime || {};
+    ALL_PROMPTS = Array.isArray(currentPack.prompts) ? currentPack.prompts.slice() : [];
+    ALL_CHARS = Array.isArray(currentPack.characters) ? currentPack.characters.slice() : [];
+    ALL_MODS = Array.isArray(currentPack.modifiers) ? currentPack.modifiers.slice() : [];
+  }
+
+  // Initialize pack data
+  loadPack('anime');
+
+  // =====================================================
+  // DOM ELEMENTS
+  // =====================================================
   const phasePill = document.getElementById("phasePill");
   const roundNowEl = document.getElementById("roundNow");
   const roundMaxEl = document.getElementById("roundMax");
@@ -35,7 +52,7 @@
   const usedModsEl = document.getElementById("usedMods");
   const hintBox = document.getElementById("hintBox");
 
-  // buttons
+  // Buttons
   const btnLobby = document.getElementById("btnLobby");
   const btnNewRound = document.getElementById("btnNewRound");
   const btnLock = document.getElementById("btnLock");
@@ -47,84 +64,86 @@
   const btnClearUsed = document.getElementById("btnClearUsed");
   const btnClearBoard = document.getElementById("btnClearBoard");
 
-  // lobby modal
+  // Lobby modal
   const lobbyBackdrop = document.getElementById("lobbyBackdrop");
   const btnCloseLobby = document.getElementById("btnCloseLobby");
+  const lobbyPackSelect = document.getElementById("lobbyPackSelect");
   const lobbyPlayerCount = document.getElementById("lobbyPlayerCount");
   const lobbyRounds = document.getElementById("lobbyRounds");
-  const lobbyModEvery = document.getElementById("lobbyModEvery");
+  const lobbyModToggle = document.getElementById("lobbyModToggle");
   const lobbyNames = document.getElementById("lobbyNames");
   const btnStartGame = document.getElementById("btnStartGame");
 
-  // vote modal
+  // Vote modal
   const voteBackdrop = document.getElementById("voteBackdrop");
   const btnCloseVote = document.getElementById("btnCloseVote");
   const voteBody = document.getElementById("voteBody");
   const btnAwardPoint = document.getElementById("btnAwardPoint");
 
-  // -----------------------------
+  // =====================================================
   // STATE
-  // -----------------------------
+  // =====================================================
   const state = {
-    phase: "Lobby",         // Lobby | RoundSetup | Locked | Modifier | Voting | ReadyNext | Finished
+    phase: "Lobby",
     roundNow: 0,
     roundMax: Number(DATA.maxRounds || 10),
-    modEvery: 3,            // 0 = off
+    modifiersEnabled: true,  // Toggle instead of frequency
     inTiebreaker: false,
-    lobbyConfigured: false, // tracks if lobby setup has been completed
+    lobbyConfigured: false,
 
-    // pools
-    promptsAvailable: ALL_PROMPTS.slice(),
-    charsAvailable: ALL_CHARS.slice(),
-    modsAvailable: ALL_MODS.slice(),
+    // Pools
+    promptsAvailable: [],
+    charsAvailable: [],
+    modsAvailable: [],
     usedPromptIds: new Set(),
     usedCharKeys: new Set(),
     usedModIdx: new Set(),
 
-    // players
+    // Players
     players: Array.from({length: 8}, (_, i) => ({ name: i < 4 ? `Player ${i+1}` : "", score: 0, enabled: i < 4 })),
 
-    // current round picks
+    // Current round
     currentPrompt: null,
-    currentOptions: [],  // [{tag, char:{name,anime}, assignedIndex, locked}]
+    currentOptions: [],  // Now includes assignedPlayerIndex automatically
     currentModifier: null,
     modifierRevealed: false,
 
-    voteSelectedIndexes: [],  // Array of player indexes who won the round
+    voteSelectedIndexes: [],
   };
 
-  // -----------------------------
+  // =====================================================
   // HELPERS
-  // -----------------------------
+  // =====================================================
   const charKey = (c) => `${(c?.name||"").trim()}|${(c?.anime||"").trim()}`;
 
-  function activePlayers(){
+  function activePlayers() {
     return state.players
       .map((p, idx) => ({...p, idx}))
       .filter(p => p.enabled && p.name.trim().length > 0);
   }
 
-  function setPhase(p){
+  function setPhase(p) {
     state.phase = p;
     phasePill.textContent = p;
     syncButtons();
   }
 
-  function shuffle(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
     }
-    return arr;
+    return a;
   }
 
-  function pickRandomFromAvailable(list){
-    if(!list.length) return null;
+  function pickRandomFromAvailable(list) {
+    if (!list.length) return null;
     const idx = Math.floor(Math.random() * list.length);
-    return list.splice(idx,1)[0];
+    return list.splice(idx, 1)[0];
   }
 
-  function updateCounters(){
+  function updateCounters() {
     roundNowEl.textContent = String(state.roundNow);
     roundMaxEl.textContent = String(state.roundMax);
     promptsLeftEl.textContent = String(state.promptsAvailable.length);
@@ -136,15 +155,16 @@
     usedModsEl.textContent = String(state.usedModIdx.size);
   }
 
-  function renderPlayers(){
+  // =====================================================
+  // RENDER FUNCTIONS
+  // =====================================================
+  function renderPlayers() {
     playersWrap.innerHTML = "";
-    // Only show enabled players (those configured in lobby)
     state.players.forEach((p, idx) => {
-      // Skip players that aren't enabled
-      if(!p.enabled) return;
-      
+      if (!p.enabled) return;
+
       const card = document.createElement("div");
-      card.className = "player" + ((p.name.trim()==="") ? " disabled" : "");
+      card.className = "player" + ((p.name.trim() === "") ? " disabled" : "");
 
       const top = document.createElement("div");
       top.className = "player-top";
@@ -153,28 +173,25 @@
       input.className = "player-name";
       input.type = "text";
       input.value = p.name;
-      input.placeholder = `Player ${idx+1}`;
+      input.placeholder = `Player ${idx + 1}`;
 
-      // IMPORTANT: do not rerender whole UI on each keystroke
       input.addEventListener("input", () => {
         state.players[idx].name = input.value;
         state.players[idx].enabled = input.value.trim().length > 0;
-        if(!state.players[idx].enabled){
+        if (!state.players[idx].enabled) {
           state.players[idx].score = 0;
-          // clear any assignments pointing to this player
           state.currentOptions.forEach(opt => {
-            if(opt.assignedIndex === idx) opt.assignedIndex = null;
+            if (opt.assignedPlayerIndex === idx) opt.assignedPlayerIndex = null;
           });
         }
-        // update only dependent parts
-        renderPlayersLight();
-        renderOptions(); // refresh dropdown list (removes disabled)
+        renderOptions();
         updateCounters();
       });
 
       top.appendChild(input);
       card.appendChild(top);
 
+      // Manual point controls (host can still adjust)
       const pts = document.createElement("div");
       pts.className = "points";
 
@@ -188,17 +205,16 @@
       num.textContent = String(p.score);
 
       const enabled = p.name.trim().length > 0;
-
       minus.disabled = !enabled;
       plus.disabled = !enabled;
 
       minus.addEventListener("click", () => {
-        if(!enabled) return;
+        if (!enabled) return;
         state.players[idx].score = Math.max(0, state.players[idx].score - 1);
         num.textContent = String(state.players[idx].score);
       });
       plus.addEventListener("click", () => {
-        if(!enabled) return;
+        if (!enabled) return;
         state.players[idx].score = state.players[idx].score + 1;
         num.textContent = String(state.players[idx].score);
       });
@@ -212,15 +228,8 @@
     });
   }
 
-  function renderPlayersLight(){
-    // update score buttons disable state + placeholders without rebuilding inputs focus issues
-    // simplest: re-render fully but ONLY when not typing? We'll keep it minimal:
-    // For now, we won't touch DOM here—renderOptions handles dropdown.
-    // (Kept for future expansions.)
-  }
-
-  function renderPrompt(){
-    if(!state.currentPrompt){
+  function renderPrompt() {
+    if (!state.currentPrompt) {
       promptTextEl.innerHTML = "—";
       promptSourceEl.textContent = "—";
       promptExplEl.textContent = "—";
@@ -231,11 +240,17 @@
     promptExplEl.textContent = state.currentPrompt.explanation;
   }
 
-  function renderModifier(){
-    const isModRound = state.modEvery > 0 && state.roundNow > 0 && (state.roundNow % state.modEvery === 0);
-    roundTypePill.textContent = isModRound ? "Modifier Round" : "Normal Round";
+  function renderModifier() {
+    // Update pill to show if modifiers are enabled
+    if (state.modifiersEnabled) {
+      roundTypePill.textContent = state.modifierRevealed ? "Modifier Active" : "Modifier Ready";
+      roundTypePill.style.borderColor = state.modifierRevealed ? "rgba(245,158,11,.55)" : "rgba(34,197,94,.35)";
+    } else {
+      roundTypePill.textContent = "Modifiers Off";
+      roundTypePill.style.borderColor = "rgba(31,41,55,.75)";
+    }
 
-    if(!isModRound || !state.modifierRevealed){
+    if (!state.modifiersEnabled || !state.modifierRevealed) {
       modifierBox.classList.add("hide");
       modifierTextEl.textContent = "—";
       return;
@@ -244,38 +259,8 @@
     modifierTextEl.textContent = state.currentModifier || "—";
   }
 
-  function renderOptions(){
+  function renderOptions() {
     optionsGrid.innerHTML = "";
-    const actives = activePlayers();
-    const buildSelect = (optIdx) => {
-      const sel = document.createElement("select");
-      sel.className = "select";
-      // unassigned option
-      const o0 = document.createElement("option");
-      o0.value = "";
-      o0.textContent = "Unassigned";
-      sel.appendChild(o0);
-
-      actives.forEach(p => {
-        const o = document.createElement("option");
-        o.value = String(p.idx);
-        o.textContent = p.name;
-        sel.appendChild(o);
-      });
-
-      // set value
-      const assigned = state.currentOptions[optIdx]?.assignedIndex;
-      sel.value = (assigned === null || assigned === undefined) ? "" : String(assigned);
-
-      sel.disabled = state.phase === "Locked" || state.phase === "Modifier" || state.phase === "Voting" || state.phase === "ReadyNext";
-
-      sel.addEventListener("change", () => {
-        const v = sel.value;
-        state.currentOptions[optIdx].assignedIndex = v === "" ? null : Number(v);
-      });
-
-      return sel;
-    };
 
     state.currentOptions.forEach((opt, idx) => {
       const card = document.createElement("div");
@@ -293,16 +278,21 @@
       sub.className = "sub";
       sub.textContent = `Anime: ${opt.char.anime || "—"}`;
 
+      // Show assigned player name (auto-assigned)
       const assign = document.createElement("div");
       assign.className = "assign";
-
-      const label = document.createElement("label");
-      label.textContent = "Assigned to:";
-
-      const sel = buildSelect(idx);
-
-      assign.appendChild(label);
-      assign.appendChild(sel);
+      
+      const assignLabel = document.createElement("div");
+      assignLabel.className = "assign-label";
+      
+      const player = opt.assignedPlayerIndex !== null ? state.players[opt.assignedPlayerIndex] : null;
+      if (player && player.name) {
+        assignLabel.innerHTML = `<span class="assign-to">Assigned to:</span> <span class="assign-name">${player.name}</span>`;
+      } else {
+        assignLabel.innerHTML = `<span class="assign-to">Assigned to:</span> <span class="assign-name muted">Unassigned</span>`;
+      }
+      
+      assign.appendChild(assignLabel);
 
       card.appendChild(tag);
       card.appendChild(name);
@@ -313,19 +303,24 @@
     });
   }
 
-  function syncButtons(){
+  function syncButtons() {
     const gameNotStarted = state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured;
     const hasRound = state.roundNow > 0;
 
-    // New Round: disabled only if lobby hasn't been configured yet, or game is finished
     btnNewRound.disabled = gameNotStarted || state.phase === "Finished";
     btnLock.disabled = !hasRound || !(state.phase === "RoundSetup");
-    btnReveal.disabled = !hasRound || !(state.phase === "Locked") || !(state.modEvery > 0 && state.roundNow % state.modEvery === 0) || state.modifierRevealed;
-    btnVoting.disabled = !hasRound || !(state.phase === "Locked" || state.phase === "Modifier");
+    
+    // Reveal modifier: enabled if modifiers are on, round active, not already revealed
+    btnReveal.disabled = !hasRound || !state.modifiersEnabled || state.modifierRevealed || state.phase === "Lobby" || state.phase === "Finished";
+    
+    btnVoting.disabled = !hasRound || !(state.phase === "Locked" || state.phase === "Modifier" || state.phase === "RoundSetup");
     btnNext.disabled = !hasRound || !(state.phase === "Voting" || state.phase === "ReadyNext");
   }
 
-  function clearBoardOnly(){
+  // =====================================================
+  // GAME LOGIC
+  // =====================================================
+  function clearBoardOnly() {
     state.currentPrompt = null;
     state.currentOptions = [];
     state.currentModifier = null;
@@ -335,7 +330,7 @@
     renderOptions();
   }
 
-  function resetPools(){
+  function resetPools() {
     state.promptsAvailable = ALL_PROMPTS.slice();
     state.charsAvailable = ALL_CHARS.slice();
     state.modsAvailable = ALL_MODS.slice();
@@ -344,67 +339,82 @@
     state.usedModIdx = new Set();
   }
 
-  function startRound(){
-    // pick prompt
+  function startRound() {
+    const actives = activePlayers();
+    if (actives.length < 2) {
+      hintBox.innerHTML = "Need at least 2 active players. Check <b>Lobby Setup</b>.";
+      return;
+    }
+
+    // Pick prompt
     const prompt = pickRandomFromAvailable(state.promptsAvailable);
-    if(!prompt){
+    if (!prompt) {
       hintBox.innerHTML = "No prompts left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
       return;
     }
     state.currentPrompt = prompt;
     state.usedPromptIds.add(prompt.id);
 
-    // pick 4 unique chars (not used before)
+    // Pick characters - ONE per player (not always 4)
+    const numPlayers = actives.length;
     const picks = [];
-    const temp = [];
-    // take a shuffled copy of available and find first 4 not used
     const shuffled = shuffle(state.charsAvailable.slice());
-    for(const c of shuffled){
-      if(picks.length >= 4) break;
+    for (const c of shuffled) {
+      if (picks.length >= numPlayers) break;  // Only pick as many as players
       const k = charKey(c);
-      if(state.usedCharKeys.has(k)) continue;
+      if (state.usedCharKeys.has(k)) continue;
       picks.push(c);
     }
-    if(picks.length < 4){
+    if (picks.length < numPlayers) {
       hintBox.innerHTML = "Not enough unused characters left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
       return;
     }
-    // remove picked chars from available
+
     picks.forEach(c => {
       const k = charKey(c);
       state.usedCharKeys.add(k);
       const idx = state.charsAvailable.findIndex(x => charKey(x) === k);
-      if(idx >= 0) state.charsAvailable.splice(idx,1);
+      if (idx >= 0) state.charsAvailable.splice(idx, 1);
     });
 
-    state.currentOptions = [
-      { tag: "Option A", char: picks[0], assignedIndex: null },
-      { tag: "Option B", char: picks[1], assignedIndex: null },
-      { tag: "Option C", char: picks[2], assignedIndex: null },
-      { tag: "Option D", char: picks[3], assignedIndex: null },
-    ];
+    // AUTO-ASSIGN: Shuffle players and assign exactly 1 character per player
+    const shuffledPlayers = shuffle(actives.slice());
+    const tags = ["Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H"];
+    
+    state.currentOptions = picks.map((char, i) => ({
+      tag: tags[i] || `Option ${i + 1}`,
+      char: char,
+      // Each player gets exactly 1 character
+      assignedPlayerIndex: shuffledPlayers[i].idx
+    }));
 
-    // reset modifier state
+    // Reset modifier state for new round
     state.currentModifier = null;
     state.modifierRevealed = false;
 
     state.roundNow += 1;
     setPhase("RoundSetup");
 
-    hintBox.innerHTML = "Assign options to players, then <b>Lock Picks</b>.";
+    hintBox.innerHTML = "Each player has 1 character! Debate, then <b>Start Voting</b>. Host can <b>Reveal Modifier</b> anytime.";
     renderPrompt();
     renderModifier();
     renderOptions();
     updateCounters();
   }
 
-  function revealModifier(){
-    const isModRound = state.modEvery > 0 && state.roundNow > 0 && (state.roundNow % state.modEvery === 0);
-    if(!isModRound) return;
+  function revealModifier() {
+    if (!state.modifiersEnabled) {
+      hintBox.innerHTML = "Modifiers are disabled for this game.";
+      return;
+    }
+    if (state.modifierRevealed) {
+      hintBox.innerHTML = "Modifier already revealed this round.";
+      return;
+    }
 
     const mod = pickRandomFromAvailable(state.modsAvailable);
-    if(!mod){
-      hintBox.innerHTML = "No modifiers left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
+    if (!mod) {
+      hintBox.innerHTML = "No modifiers left. Click <b>Clear Used Pools</b> to reset.";
       return;
     }
     state.currentModifier = mod;
@@ -412,32 +422,35 @@
     state.usedModIdx.add(mod);
 
     setPhase("Modifier");
-    hintBox.innerHTML = "Modifier revealed. Debate, then <b>Start Voting</b>.";
+    hintBox.innerHTML = "🎲 <b>Modifier revealed!</b> Factor this into your debate!";
     renderModifier();
     updateCounters();
+    syncButtons();
   }
 
-  // -----------------------------
+  // =====================================================
   // LOBBY
-  // -----------------------------
-  function openLobby(){
+  // =====================================================
+  function openLobby() {
     lobbyBackdrop.classList.remove("hidden");
   }
-  function closeLobby(){
+
+  function closeLobby() {
     lobbyBackdrop.classList.add("hidden");
   }
 
-  function renderLobbyNames(count){
+  function renderLobbyNames(count) {
+    if (!lobbyNames) return;
     lobbyNames.innerHTML = "";
-    for(let i=0;i<count;i++){
+    for (let i = 0; i < count; i++) {
       const wrap = document.createElement("div");
       wrap.className = "field";
       const label = document.createElement("label");
-      label.textContent = `Player ${i+1} name`;
+      label.textContent = `Player ${i + 1} name`;
       const input = document.createElement("input");
       input.className = "input";
       input.type = "text";
-      input.value = state.players[i].name || `Player ${i+1}`;
+      input.value = state.players[i]?.name || `Player ${i + 1}`;
       input.addEventListener("input", () => {
         state.players[i].name = input.value;
       });
@@ -447,184 +460,221 @@
     }
   }
 
-  function applyLobby(){
+  function applyLobbyAndStart() {
+    // Load selected pack
+    loadPack(lobbyPackSelect.value);
+    resetPools();
+
     const count = Number(lobbyPlayerCount.value);
     state.roundMax = Math.max(1, Number(lobbyRounds.value || 10));
-    state.modEvery = Math.max(0, Number(lobbyModEvery.value || 3));
+    state.modifiersEnabled = lobbyModToggle.value === "on";
 
-    // enable first N
+    // Enable first N players
     state.players.forEach((p, idx) => {
-      if(idx < count){
+      if (idx < count) {
         p.enabled = true;
-        if(!p.name || p.name.trim()==="") p.name = `Player ${idx+1}`;
-      }else{
+        if (!p.name || p.name.trim() === "") p.name = `Player ${idx + 1}`;
+      } else {
         p.enabled = false;
         p.name = "";
         p.score = 0;
       }
     });
 
-    // start game at round 0
+    // Reset game state
     state.roundNow = 0;
     state.inTiebreaker = false;
-    state.lobbyConfigured = true; // Mark lobby as configured so New Round becomes enabled
-    clearBoardOnly();
-    setPhase("Lobby");
+    state.lobbyConfigured = true;
+    state.players.forEach(p => p.score = 0);
 
+    clearBoardOnly();
     renderPlayers();
     updateCounters();
-    hintBox.innerHTML = "Ready. Click <b>New Round</b> to generate a prompt + 4 random options.";
+
+    // Close lobby and AUTO-START first round
+    closeLobby();
+    startRound();
   }
 
-  // -----------------------------
-  // VOTING
-  // -----------------------------
-  function openVote(){
+  // =====================================================
+  // VOTING (with auto-award points)
+  // =====================================================
+  function openVote() {
     const actives = activePlayers();
-    if(!actives.length){
+    if (!actives.length) {
       hintBox.innerHTML = "No active players. Open <b>Lobby Setup</b>.";
       return;
     }
-    // Reset selected winners (now an array for multiple selections)
+
     state.voteSelectedIndexes = [];
 
     voteBody.innerHTML = "";
+    
+    // Header
+    const header = document.createElement("div");
+    header.className = "vote-header";
+    header.innerHTML = "<p class='muted small'>Select all players whose character choices can succeed with the prompt. Points will be awarded automatically.</p>";
+    voteBody.appendChild(header);
+
     const list = document.createElement("div");
     list.className = "players";
 
     actives.forEach(p => {
+      // Find which character this player has
+      const playerOption = state.currentOptions.find(opt => opt.assignedPlayerIndex === p.idx);
+      
       const row = document.createElement("label");
       row.style.display = "flex";
       row.style.alignItems = "center";
-      row.style.gap = "10px";
-      row.style.padding = "10px 12px";
+      row.style.gap = "12px";
+      row.style.padding = "12px 14px";
       row.style.border = "1px solid rgba(31,41,55,.75)";
       row.style.borderRadius = "14px";
       row.style.background = "rgba(17,24,39,.45)";
       row.style.cursor = "pointer";
-      row.style.marginBottom = "8px";
+      row.style.marginBottom = "10px";
+      row.style.transition = "border-color .15s ease, background .15s ease";
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.value = String(p.idx);
-      checkbox.style.width = "18px";
-      checkbox.style.height = "18px";
+      checkbox.style.width = "20px";
+      checkbox.style.height = "20px";
+      checkbox.style.accentColor = "#22c55e";
+      
       checkbox.addEventListener("change", () => {
-        if(checkbox.checked){
+        if (checkbox.checked) {
           state.voteSelectedIndexes.push(Number(checkbox.value));
+          row.style.borderColor = "rgba(34,197,94,.55)";
+          row.style.background = "rgba(34,197,94,.08)";
         } else {
           state.voteSelectedIndexes = state.voteSelectedIndexes.filter(i => i !== Number(checkbox.value));
+          row.style.borderColor = "rgba(31,41,55,.75)";
+          row.style.background = "rgba(17,24,39,.45)";
         }
       });
 
-      const txt = document.createElement("div");
-      txt.style.fontWeight = "950";
-      txt.textContent = p.name;
+      const info = document.createElement("div");
+      info.style.flex = "1";
+      
+      const playerName = document.createElement("div");
+      playerName.style.fontWeight = "950";
+      playerName.style.fontSize = "16px";
+      playerName.textContent = p.name;
+      
+      const charInfo = document.createElement("div");
+      charInfo.style.fontSize = "13px";
+      charInfo.style.color = "rgba(229,231,235,.7)";
+      charInfo.style.marginTop = "4px";
+      if (playerOption) {
+        charInfo.textContent = `${playerOption.tag}: ${playerOption.char.name} (${playerOption.char.anime})`;
+      } else {
+        charInfo.textContent = "No character assigned";
+      }
+      
+      info.appendChild(playerName);
+      info.appendChild(charInfo);
 
       row.appendChild(checkbox);
-      row.appendChild(txt);
+      row.appendChild(info);
       list.appendChild(row);
     });
 
     voteBody.appendChild(list);
-
     voteBackdrop.classList.remove("hidden");
   }
-  function closeVote(){
+
+  function closeVote() {
     voteBackdrop.classList.add("hidden");
   }
 
-  function awardPoints(){
-    // Award 1 point to each selected player
-    if(!state.voteSelectedIndexes || state.voteSelectedIndexes.length === 0){
+  function awardPoints() {
+    if (!state.voteSelectedIndexes || state.voteSelectedIndexes.length === 0) {
       hintBox.innerHTML = "No players selected. Select at least one winner or close voting.";
       return false;
     }
-    
+
     const winners = [];
     state.voteSelectedIndexes.forEach(idx => {
       const p = state.players[idx];
-      if(p && p.enabled && p.name.trim() !== ""){
-        p.score += 1;
+      if (p && p.enabled && p.name.trim() !== "") {
+        p.score += 1;  // AUTO-AWARD point
         winners.push(p.name);
       }
     });
-    
+
     renderPlayers();
-    if(winners.length === 1){
-      hintBox.innerHTML = `Point awarded to <b>${winners[0]}</b>. Click <b>Next Round</b> to continue.`;
+    
+    if (winners.length === 1) {
+      hintBox.innerHTML = `🎉 <b>${winners[0]}</b> wins the round! (+1 point) Click <b>Next Round</b>.`;
     } else {
-      hintBox.innerHTML = `Points awarded to <b>${winners.join(", ")}</b>. Click <b>Next Round</b> to continue.`;
+      hintBox.innerHTML = `🎉 <b>${winners.join(", ")}</b> all win! (+1 point each) Click <b>Next Round</b>.`;
     }
     setPhase("ReadyNext");
     return true;
   }
 
-  // -----------------------------
-  // WINNER
-  // -----------------------------
-  function checkWinner(){
+  // =====================================================
+  // WINNER CHECK
+  // =====================================================
+  function checkWinner() {
     const actives = activePlayers();
-    if(!actives.length){
+    if (!actives.length) {
       hintBox.innerHTML = "No active players.";
       return;
     }
     const max = Math.max(...actives.map(p => p.score));
     const leaders = actives.filter(p => p.score === max);
 
-    // if not done with main rounds, just show leaders
-    if(state.roundNow < state.roundMax && !state.inTiebreaker){
-      hintBox.innerHTML = `Current leader: <b>${leaders.map(x=>x.name).join(", ")}</b> (${max} pts).`;
+    if (state.roundNow < state.roundMax && !state.inTiebreaker) {
+      hintBox.innerHTML = `Current leader: <b>${leaders.map(x => x.name).join(", ")}</b> (${max} pts).`;
       return;
     }
 
-    if(leaders.length === 1){
-      hintBox.innerHTML = `🏆 Winner: <b>${leaders[0].name}</b> with <b>${max}</b> point(s)!`;
+    if (leaders.length === 1) {
+      hintBox.innerHTML = `🏆 <b>WINNER: ${leaders[0].name}</b> with <b>${max}</b> point(s)!`;
       setPhase("Finished");
       return;
     }
 
-    // tie -> tiebreaker
+    // Tie -> tiebreaker
     state.inTiebreaker = true;
-    state.roundMax = state.roundNow + 1; // extend one round at a time
-    hintBox.innerHTML = `Tie at <b>${max}</b> between: <b>${leaders.map(x=>x.name).join(", ")}</b>. Tiebreaker round begins!`;
+    state.roundMax = state.roundNow + 1;
+    hintBox.innerHTML = `⚔️ Tie at <b>${max}</b> between: <b>${leaders.map(x => x.name).join(", ")}</b>. Tiebreaker round!`;
   }
 
-  // -----------------------------
-  // EVENTS
-  // -----------------------------
+  // =====================================================
+  // EVENT HANDLERS
+  // =====================================================
   btnLobby.addEventListener("click", openLobby);
   btnCloseLobby.addEventListener("click", closeLobby);
-  lobbyBackdrop.addEventListener("click", (e) => { if(e.target === lobbyBackdrop) closeLobby(); });
+  lobbyBackdrop.addEventListener("click", (e) => { if (e.target === lobbyBackdrop) closeLobby(); });
 
   btnStartGame.addEventListener("click", () => {
-    applyLobby();
-    closeLobby();
+    applyLobbyAndStart();
   });
 
   btnNewRound.addEventListener("click", () => {
-    if(state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured){
-      // must configure lobby first
+    if (state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured) {
       hintBox.innerHTML = "Open <b>Lobby Setup</b> first.";
       return;
     }
-    if(state.phase === "Finished"){
+    if (state.phase === "Finished") {
       hintBox.innerHTML = "Game finished. Click <b>Restart Game</b> to play again.";
       return;
     }
-    if(!state.inTiebreaker && state.roundNow >= state.roundMax){
-      hintBox.innerHTML = "Reached final round. Click <b>Check Winner</b> or start tiebreaker by voting.";
+    if (!state.inTiebreaker && state.roundNow >= state.roundMax) {
+      hintBox.innerHTML = "Reached final round. Click <b>Check Winner</b>.";
       return;
     }
     startRound();
   });
 
+  // Lock is now optional - can go straight to voting
   btnLock.addEventListener("click", () => {
-    if(state.phase !== "RoundSetup") return;
+    if (state.phase !== "RoundSetup") return;
     setPhase("Locked");
-    hintBox.innerHTML = (state.modEvery > 0 && state.roundNow % state.modEvery === 0)
-      ? "Picks locked. Now <b>Reveal Modifier</b>."
-      : "Picks locked. Debate, then <b>Start Voting</b>.";
+    hintBox.innerHTML = "Picks locked. Debate! Host can <b>Reveal Modifier</b> or <b>Start Voting</b>.";
     renderOptions();
     renderModifier();
   });
@@ -637,53 +687,53 @@
   });
 
   btnCloseVote.addEventListener("click", closeVote);
-  voteBackdrop.addEventListener("click", (e) => { if(e.target === voteBackdrop) closeVote(); });
+  voteBackdrop.addEventListener("click", (e) => { if (e.target === voteBackdrop) closeVote(); });
 
   btnAwardPoint.addEventListener("click", () => {
-    if(awardPoints()){
+    if (awardPoints()) {
       closeVote();
     }
   });
 
   btnNext.addEventListener("click", () => {
-    if(!(state.phase === "Voting" || state.phase === "ReadyNext")) return;
+    if (!(state.phase === "Voting" || state.phase === "ReadyNext")) return;
 
-    // If main rounds finished, check winner automatically
-    if(!state.inTiebreaker && state.roundNow >= state.roundMax){
+    if (!state.inTiebreaker && state.roundNow >= state.roundMax) {
       checkWinner();
-      if(state.phase === "Finished") return;
-      // tie -> allow continuing to tiebreaker
-    } else if(state.inTiebreaker){
-      // after a tiebreaker vote, check winner
+      if (state.phase === "Finished") return;
+    } else if (state.inTiebreaker) {
       checkWinner();
-      if(state.phase === "Finished") return;
+      if (state.phase === "Finished") return;
     }
 
-    // Automatically start the next round instead of just clearing board
+    // Auto-start next round
     clearBoardOnly();
     startRound();
   });
 
   btnCheckWinner.addEventListener("click", checkWinner);
 
+  // Restart opens Lobby
   btnRestart.addEventListener("click", () => {
     resetPools();
     state.players.forEach(p => { p.score = 0; });
     state.roundNow = 0;
     state.roundMax = Number(lobbyRounds.value || DATA.maxRounds || 10);
     state.inTiebreaker = false;
-    state.lobbyConfigured = false; // Reset so user must go through lobby again
+    state.lobbyConfigured = false;
+    state.modifierRevealed = false;
     clearBoardOnly();
     setPhase("Lobby");
     renderPlayers();
     updateCounters();
-    hintBox.innerHTML = "Restarted. Open <b>Lobby Setup</b> to configure players.";
+    hintBox.innerHTML = "Restarted. Configure <b>Lobby Setup</b> to play again.";
+    openLobby();
   });
 
   btnClearUsed.addEventListener("click", () => {
     resetPools();
     updateCounters();
-    hintBox.innerHTML = "Used pools cleared.";
+    hintBox.innerHTML = "Used pools cleared. All prompts, characters, and modifiers available again.";
   });
 
   btnClearBoard.addEventListener("click", () => {
@@ -691,24 +741,53 @@
     hintBox.innerHTML = "Board cleared.";
   });
 
-  // -----------------------------
+  // =====================================================
   // INIT
-  // -----------------------------
-  // populate lobby player count
-  for(let i=2;i<=8;i++){
-    const o=document.createElement("option");
-    o.value=String(i);
-    o.textContent=String(i);
-    lobbyPlayerCount.appendChild(o);
-  }
-  lobbyPlayerCount.value="4";
-  lobbyPlayerCount.addEventListener("change", () => renderLobbyNames(Number(lobbyPlayerCount.value)));
-  renderLobbyNames(4);
+  // =====================================================
+  function init() {
+    // Populate pack select dropdown
+    if (lobbyPackSelect) {
+      lobbyPackSelect.innerHTML = "";
+      Object.keys(PACKS).forEach(k => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = PACKS[k].label || k;
+        lobbyPackSelect.appendChild(opt);
+      });
+      lobbyPackSelect.value = currentPackKey;
+    }
 
-  // set initial counts
-  resetPools();
-  updateCounters();
-  renderPlayers();
-  setPhase("Lobby");
+    // Populate player count dropdown
+    if (lobbyPlayerCount) {
+      lobbyPlayerCount.innerHTML = "";
+      for (let i = 2; i <= 8; i++) {
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = String(i);
+        if (i === 4) o.selected = true;
+        lobbyPlayerCount.appendChild(o);
+      }
+      lobbyPlayerCount.addEventListener("change", () => renderLobbyNames(Number(lobbyPlayerCount.value)));
+    }
+
+    // Initialize player names in lobby
+    renderLobbyNames(4);
+    
+    // Reset pools and counters
+    resetPools();
+    updateCounters();
+    renderPlayers();
+    setPhase("Lobby");
+
+    // AUTO-OPEN LOBBY on page load
+    openLobby();
+  }
+
+  // Run init when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();
