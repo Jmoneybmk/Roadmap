@@ -29,8 +29,16 @@
   const gamePanel = el('gamePanel');
 
   // Welcome
-  const btnOpenLobby = el('btnOpenLobby');
   const modeBtns = document.querySelectorAll('.mode-btn');
+  const btnNext = el('btnNext');
+  
+  // Settings Panel
+  const settingsPanel = el('settingsPanel');
+  const settingsPlayerCount = el('settingsPlayerCount');
+  const settingsTargetScore = el('settingsTargetScore');
+  const settingsNames = el('settingsNames');
+  const btnBackToMode = el('btnBackToMode');
+  const btnStartGame = el('btnStartGame');
 
   // Sidebar
   const playersList = el('playersList');
@@ -66,15 +74,6 @@
   const winnerScore = el('winnerScore');
   const btnPlayAgain = el('btnPlayAgain');
   const btnBackToMenu = el('btnBackToMenu');
-
-  // Lobby Modal
-  const lobbyBackdrop = el('lobbyBackdrop');
-  const lobbyMode = el('lobbyMode');
-  const lobbyPlayerCount = el('lobbyPlayerCount');
-  const lobbyTargetScore = el('lobbyTargetScore');
-  const lobbyNames = el('lobbyNames');
-  const btnCloseLobby = el('btnCloseLobby');
-  const btnStartGame = el('btnStartGame');
 
   // ========================================
   // STATE
@@ -196,8 +195,14 @@
   }
 
   function checkWinner() {
-    const winner = state.players.find(p => p.score >= state.targetScore);
-    return winner || null;
+    // Find all players who reached target score
+    const winners = state.players.filter(p => p.score >= state.targetScore && !p.eliminated);
+    
+    if (winners.length === 0) return null;
+    if (winners.length === 1) return winners[0];
+    
+    // Multiple winners = tie, need tiebreaker
+    return 'tie';
   }
 
   function allEliminated() {
@@ -397,17 +402,25 @@
     });
     
     // Show appropriate button
-    const winner = checkWinner();
-    if (winner) {
+    const winResult = checkWinner();
+    if (winResult && winResult !== 'tie') {
+      // Single winner - hide buttons, will transition to gameover
       btnNextRound.classList.add('hidden');
       btnRedraft.classList.add('hidden');
-      // Will transition to gameover
     } else if (allEliminated()) {
       btnNextRound.classList.add('hidden');
       btnRedraft.classList.remove('hidden');
     } else {
+      // No winner yet or tie - show next round button
       btnNextRound.classList.remove('hidden');
       btnRedraft.classList.add('hidden');
+      
+      // Update button text for tiebreaker
+      if (winResult === 'tie') {
+        btnNextRound.textContent = 'Next Round (Tiebreaker)';
+      } else {
+        btnNextRound.textContent = 'Next Round';
+      }
     }
   }
 
@@ -524,9 +537,14 @@
     renderPlayers();
     renderResults();
     
-    // Check for winner
-    const winner = checkWinner();
-    if (winner) {
+    // Check for winner or tie
+    const winResult = checkWinner();
+    if (winResult === 'tie') {
+      // Multiple players reached target score - continue to tiebreaker
+      console.log('TIE: Multiple players reached target score, continuing...');
+      // Don't end game, button will say "Next Round (Tiebreaker)"
+    } else if (winResult) {
+      // Single winner
       setTimeout(() => {
         setPhase('gameover');
         renderGameOver();
@@ -545,19 +563,21 @@
   }
 
   // ========================================
-  // LOBBY
+  // SETTINGS PANEL
   // ========================================
-  function openLobby() {
-    lobbyBackdrop.classList.remove('hidden');
-    renderLobbyNames(Number(lobbyPlayerCount.value));
+  function showSettings() {
+    welcomePanel.classList.add('hidden');
+    settingsPanel.classList.remove('hidden');
+    renderSettingsNames(Number(settingsPlayerCount.value));
   }
 
-  function closeLobby() {
-    lobbyBackdrop.classList.add('hidden');
+  function hideSettings() {
+    settingsPanel.classList.add('hidden');
+    welcomePanel.classList.remove('hidden');
   }
 
-  function renderLobbyNames(count) {
-    lobbyNames.innerHTML = '';
+  function renderSettingsNames(count) {
+    settingsNames.innerHTML = '';
     for (let i = 0; i < count; i++) {
       const field = document.createElement('div');
       field.className = 'field';
@@ -565,17 +585,16 @@
         <label>Player ${i + 1}</label>
         <input type="text" class="input player-name-input" value="Player ${i + 1}" data-index="${i}" />
       `;
-      lobbyNames.appendChild(field);
+      settingsNames.appendChild(field);
     }
   }
 
   function startGame() {
-    const count = Number(lobbyPlayerCount.value);
-    const names = Array.from(lobbyNames.querySelectorAll('.player-name-input'))
+    const count = Number(settingsPlayerCount.value);
+    const names = Array.from(settingsNames.querySelectorAll('.player-name-input'))
       .map(input => input.value.trim() || `Player ${Number(input.dataset.index) + 1}`);
     
-    state.mode = lobbyMode.value;
-    state.targetScore = Math.max(5, Number(lobbyTargetScore.value) || 10);
+    state.targetScore = Math.max(5, Number(settingsTargetScore.value) || 10);
     state.round = 0;
     state.usedFighters.clear();
     state.usedActivities.clear();
@@ -594,9 +613,8 @@
     roundNum.textContent = '0';
     
     // Switch panels
-    welcomePanel.classList.add('hidden');
+    settingsPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
-    closeLobby();
     
     // Start draft
     startDraft();
@@ -613,31 +631,23 @@
   // ========================================
   // EVENT LISTENERS
   // ========================================
-  // Welcome screen
+  // Welcome screen - mode selection
   modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       modeBtns.forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.mode = btn.dataset.mode;
-      lobbyMode.value = btn.dataset.mode;
+      // Show Next button when mode is selected
+      btnNext.classList.remove('hidden');
     });
   });
 
-  btnOpenLobby.addEventListener('click', openLobby);
+  btnNext.addEventListener('click', showSettings);
 
-  // Lobby
-  btnCloseLobby.addEventListener('click', closeLobby);
-  lobbyBackdrop.addEventListener('click', e => {
-    if (e.target === lobbyBackdrop) closeLobby();
-  });
-  lobbyPlayerCount.addEventListener('change', () => {
-    renderLobbyNames(Number(lobbyPlayerCount.value));
-  });
-  lobbyMode.addEventListener('change', () => {
-    state.mode = lobbyMode.value;
-    modeBtns.forEach(b => {
-      b.classList.toggle('selected', b.dataset.mode === state.mode);
-    });
+  // Settings panel
+  btnBackToMode.addEventListener('click', hideSettings);
+  settingsPlayerCount.addEventListener('change', () => {
+    renderSettingsNames(Number(settingsPlayerCount.value));
   });
   btnStartGame.addEventListener('click', startGame);
 
@@ -680,14 +690,12 @@
       const opt = document.createElement('option');
       opt.value = i;
       opt.textContent = i;
-      lobbyPlayerCount.appendChild(opt);
+      settingsPlayerCount.appendChild(opt);
     }
-    lobbyPlayerCount.value = '4';
+    settingsPlayerCount.value = '4';
     
-    // Set default mode
-    modeBtns[0].classList.add('selected');
-    
-    renderLobbyNames(4);
+    // Set default mode (but don't auto-select, user must choose)
+    // Removed auto-selection so Next button stays hidden until user picks
   }
 
   init();

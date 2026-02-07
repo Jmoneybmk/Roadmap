@@ -1,4 +1,4 @@
-// debate_app.js - Updated with auto-assign, auto-points, and modifier toggle
+// debate_app.js - Updated with New Prompt / New Characters buttons
 (() => {
   'use strict';
 
@@ -52,10 +52,10 @@
   const usedModsEl = document.getElementById("usedMods");
   const hintBox = document.getElementById("hintBox");
 
-  // Buttons
+  // Buttons - Updated: btnNewPrompt and btnNewChars instead of btnNewRound and btnLock
   const btnLobby = document.getElementById("btnLobby");
-  const btnNewRound = document.getElementById("btnNewRound");
-  const btnLock = document.getElementById("btnLock");
+  const btnNewPrompt = document.getElementById("btnNewPrompt");
+  const btnNewChars = document.getElementById("btnNewChars");
   const btnReveal = document.getElementById("btnReveal");
   const btnVoting = document.getElementById("btnVoting");
   const btnNext = document.getElementById("btnNext");
@@ -87,7 +87,7 @@
     phase: "Lobby",
     roundNow: 0,
     roundMax: Number(DATA.maxRounds || 10),
-    modifiersEnabled: true,  // Toggle instead of frequency
+    modifiersEnabled: true,
     inTiebreaker: false,
     lobbyConfigured: false,
 
@@ -104,7 +104,7 @@
 
     // Current round
     currentPrompt: null,
-    currentOptions: [],  // Now includes assignedPlayerIndex automatically
+    currentOptions: [],
     currentModifier: null,
     modifierRevealed: false,
 
@@ -191,7 +191,7 @@
       top.appendChild(input);
       card.appendChild(top);
 
-      // Manual point controls (host can still adjust)
+      // Manual point controls
       const pts = document.createElement("div");
       pts.className = "points";
 
@@ -241,7 +241,6 @@
   }
 
   function renderModifier() {
-    // Update pill to show if modifiers are enabled
     if (state.modifiersEnabled) {
       roundTypePill.textContent = state.modifierRevealed ? "Modifier Active" : "Modifier Ready";
       roundTypePill.style.borderColor = state.modifierRevealed ? "rgba(245,158,11,.55)" : "rgba(34,197,94,.35)";
@@ -278,7 +277,6 @@
       sub.className = "sub";
       sub.textContent = `Anime: ${opt.char.anime || "—"}`;
 
-      // Show assigned player name (auto-assigned)
       const assign = document.createElement("div");
       assign.className = "assign";
       
@@ -307,13 +305,19 @@
     const gameNotStarted = state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured;
     const hasRound = state.roundNow > 0;
 
-    btnNewRound.disabled = gameNotStarted || state.phase === "Finished";
-    btnLock.disabled = !hasRound || !(state.phase === "RoundSetup");
+    // New Prompt: available during active round to refresh just the prompt
+    btnNewPrompt.disabled = gameNotStarted || state.phase === "Finished";
     
-    // Reveal modifier: enabled if modifiers are on, round active, not already revealed
+    // New Characters: available during active round to refresh just the characters
+    btnNewChars.disabled = gameNotStarted || state.phase === "Finished" || !state.currentPrompt;
+    
+    // Reveal modifier
     btnReveal.disabled = !hasRound || !state.modifiersEnabled || state.modifierRevealed || state.phase === "Lobby" || state.phase === "Finished";
     
-    btnVoting.disabled = !hasRound || !(state.phase === "Locked" || state.phase === "Modifier" || state.phase === "RoundSetup");
+    // Voting
+    btnVoting.disabled = !hasRound || state.phase === "Lobby" || state.phase === "Finished" || !state.currentPrompt;
+    
+    // Next Round
     btnNext.disabled = !hasRound || !(state.phase === "Voting" || state.phase === "ReadyNext");
   }
 
@@ -339,6 +343,7 @@
     state.usedModIdx = new Set();
   }
 
+  // Full round start (prompt + characters + increment round)
   function startRound() {
     const actives = activePlayers();
     if (actives.length < 2) {
@@ -355,38 +360,8 @@
     state.currentPrompt = prompt;
     state.usedPromptIds.add(prompt.id);
 
-    // Pick characters - ONE per player (not always 4)
-    const numPlayers = actives.length;
-    const picks = [];
-    const shuffled = shuffle(state.charsAvailable.slice());
-    for (const c of shuffled) {
-      if (picks.length >= numPlayers) break;  // Only pick as many as players
-      const k = charKey(c);
-      if (state.usedCharKeys.has(k)) continue;
-      picks.push(c);
-    }
-    if (picks.length < numPlayers) {
-      hintBox.innerHTML = "Not enough unused characters left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
-      return;
-    }
-
-    picks.forEach(c => {
-      const k = charKey(c);
-      state.usedCharKeys.add(k);
-      const idx = state.charsAvailable.findIndex(x => charKey(x) === k);
-      if (idx >= 0) state.charsAvailable.splice(idx, 1);
-    });
-
-    // AUTO-ASSIGN: Shuffle players and assign exactly 1 character per player
-    const shuffledPlayers = shuffle(actives.slice());
-    const tags = ["Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H"];
-    
-    state.currentOptions = picks.map((char, i) => ({
-      tag: tags[i] || `Option ${i + 1}`,
-      char: char,
-      // Each player gets exactly 1 character
-      assignedPlayerIndex: shuffledPlayers[i].idx
-    }));
+    // Pick characters
+    if (!pickNewCharacters()) return;
 
     // Reset modifier state for new round
     state.currentModifier = null;
@@ -400,6 +375,112 @@
     renderModifier();
     renderOptions();
     updateCounters();
+  }
+
+  // NEW: Pick only a new prompt (keep current characters)
+  function pickNewPromptOnly() {
+    const actives = activePlayers();
+    if (actives.length < 2) {
+      hintBox.innerHTML = "Need at least 2 active players. Check <b>Lobby Setup</b>.";
+      return;
+    }
+
+    const prompt = pickRandomFromAvailable(state.promptsAvailable);
+    if (!prompt) {
+      hintBox.innerHTML = "No prompts left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
+      return;
+    }
+    state.currentPrompt = prompt;
+    state.usedPromptIds.add(prompt.id);
+
+    // If no characters yet, pick them too
+    if (state.currentOptions.length === 0) {
+      if (!pickNewCharacters()) return;
+      state.roundNow += 1;
+    }
+
+    // Reset modifier for fresh debate
+    state.currentModifier = null;
+    state.modifierRevealed = false;
+
+    setPhase("RoundSetup");
+    hintBox.innerHTML = "🔄 New prompt! Same characters. Debate, then <b>Start Voting</b>.";
+    renderPrompt();
+    renderModifier();
+    updateCounters();
+  }
+
+  // NEW: Pick only new characters (keep current prompt)
+  function pickNewCharacters() {
+    const actives = activePlayers();
+    if (actives.length < 2) {
+      hintBox.innerHTML = "Need at least 2 active players. Check <b>Lobby Setup</b>.";
+      return false;
+    }
+
+    // Return old characters to pool (if any)
+    state.currentOptions.forEach(opt => {
+      if (opt.char) {
+        const k = charKey(opt.char);
+        state.usedCharKeys.delete(k);
+        state.charsAvailable.push(opt.char);
+      }
+    });
+
+    const numPlayers = actives.length;
+    const picks = [];
+    const shuffled = shuffle(state.charsAvailable.slice());
+    
+    for (const c of shuffled) {
+      if (picks.length >= numPlayers) break;
+      const k = charKey(c);
+      if (state.usedCharKeys.has(k)) continue;
+      picks.push(c);
+    }
+    
+    if (picks.length < numPlayers) {
+      hintBox.innerHTML = "Not enough unused characters left. Click <b>Clear Used Pools</b> or <b>Restart Game</b>.";
+      return false;
+    }
+
+    picks.forEach(c => {
+      const k = charKey(c);
+      state.usedCharKeys.add(k);
+      const idx = state.charsAvailable.findIndex(x => charKey(x) === k);
+      if (idx >= 0) state.charsAvailable.splice(idx, 1);
+    });
+
+    // Auto-assign players
+    const shuffledPlayers = shuffle(actives.slice());
+    const tags = ["Option A", "Option B", "Option C", "Option D", "Option E", "Option F", "Option G", "Option H"];
+    
+    state.currentOptions = picks.map((char, i) => ({
+      tag: tags[i] || `Option ${i + 1}`,
+      char: char,
+      assignedPlayerIndex: shuffledPlayers[i].idx
+    }));
+
+    renderOptions();
+    updateCounters();
+    return true;
+  }
+
+  // NEW: Button handler for new characters only
+  function refreshCharactersOnly() {
+    if (!state.currentPrompt) {
+      hintBox.innerHTML = "No prompt yet. Click <b>New Prompt</b> first.";
+      return;
+    }
+
+    if (!pickNewCharacters()) return;
+
+    // Reset modifier for fresh debate
+    state.currentModifier = null;
+    state.modifierRevealed = false;
+
+    setPhase("RoundSetup");
+    hintBox.innerHTML = "🔄 New characters! Same prompt. Debate, then <b>Start Voting</b>.";
+    renderModifier();
   }
 
   function revealModifier() {
@@ -461,7 +542,6 @@
   }
 
   function applyLobbyAndStart() {
-    // Load selected pack
     loadPack(lobbyPackSelect.value);
     resetPools();
 
@@ -469,7 +549,6 @@
     state.roundMax = Math.max(1, Number(lobbyRounds.value || 10));
     state.modifiersEnabled = lobbyModToggle.value === "on";
 
-    // Enable first N players
     state.players.forEach((p, idx) => {
       if (idx < count) {
         p.enabled = true;
@@ -481,7 +560,6 @@
       }
     });
 
-    // Reset game state
     state.roundNow = 0;
     state.inTiebreaker = false;
     state.lobbyConfigured = true;
@@ -491,13 +569,12 @@
     renderPlayers();
     updateCounters();
 
-    // Close lobby and AUTO-START first round
     closeLobby();
     startRound();
   }
 
   // =====================================================
-  // VOTING (with auto-award points)
+  // VOTING
   // =====================================================
   function openVote() {
     const actives = activePlayers();
@@ -510,7 +587,6 @@
 
     voteBody.innerHTML = "";
     
-    // Header
     const header = document.createElement("div");
     header.className = "vote-header";
     header.innerHTML = "<p class='muted small'>Select all players whose character choices can succeed with the prompt. Points will be awarded automatically.</p>";
@@ -520,7 +596,6 @@
     list.className = "players";
 
     actives.forEach(p => {
-      // Find which character this player has
       const playerOption = state.currentOptions.find(opt => opt.assignedPlayerIndex === p.idx);
       
       const row = document.createElement("label");
@@ -548,7 +623,7 @@
           row.style.borderColor = "rgba(34,197,94,.55)";
           row.style.background = "rgba(34,197,94,.08)";
         } else {
-          state.voteSelectedIndexes = state.voteSelectedIndexes.filter(i => i !== Number(checkbox.value));
+          state.voteSelectedIndexes = state.voteSelectedIndexes.filter(x => x !== Number(checkbox.value));
           row.style.borderColor = "rgba(31,41,55,.75)";
           row.style.background = "rgba(17,24,39,.45)";
         }
@@ -598,7 +673,7 @@
     state.voteSelectedIndexes.forEach(idx => {
       const p = state.players[idx];
       if (p && p.enabled && p.name.trim() !== "") {
-        p.score += 1;  // AUTO-AWARD point
+        p.score += 1;
         winners.push(p.name);
       }
     });
@@ -637,7 +712,6 @@
       return;
     }
 
-    // Tie -> tiebreaker
     state.inTiebreaker = true;
     state.roundMax = state.roundNow + 1;
     hintBox.innerHTML = `⚔️ Tie at <b>${max}</b> between: <b>${leaders.map(x => x.name).join(", ")}</b>. Tiebreaker round!`;
@@ -654,7 +728,8 @@
     applyLobbyAndStart();
   });
 
-  btnNewRound.addEventListener("click", () => {
+  // NEW: New Prompt button - picks new prompt, keeps characters if any
+  btnNewPrompt.addEventListener("click", () => {
     if (state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured) {
       hintBox.innerHTML = "Open <b>Lobby Setup</b> first.";
       return;
@@ -667,16 +742,20 @@
       hintBox.innerHTML = "Reached final round. Click <b>Check Winner</b>.";
       return;
     }
-    startRound();
+    pickNewPromptOnly();
   });
 
-  // Lock is now optional - can go straight to voting
-  btnLock.addEventListener("click", () => {
-    if (state.phase !== "RoundSetup") return;
-    setPhase("Locked");
-    hintBox.innerHTML = "Picks locked. Debate! Host can <b>Reveal Modifier</b> or <b>Start Voting</b>.";
-    renderOptions();
-    renderModifier();
+  // NEW: New Characters button - picks new characters, keeps prompt
+  btnNewChars.addEventListener("click", () => {
+    if (state.phase === "Lobby" && state.roundNow === 0 && !state.lobbyConfigured) {
+      hintBox.innerHTML = "Open <b>Lobby Setup</b> first.";
+      return;
+    }
+    if (state.phase === "Finished") {
+      hintBox.innerHTML = "Game finished. Click <b>Restart Game</b> to play again.";
+      return;
+    }
+    refreshCharactersOnly();
   });
 
   btnReveal.addEventListener("click", () => revealModifier());
@@ -713,7 +792,6 @@
 
   btnCheckWinner.addEventListener("click", checkWinner);
 
-  // Restart opens Lobby
   btnRestart.addEventListener("click", () => {
     resetPools();
     state.players.forEach(p => { p.score = 0; });
@@ -745,7 +823,6 @@
   // INIT
   // =====================================================
   function init() {
-    // Populate pack select dropdown
     if (lobbyPackSelect) {
       lobbyPackSelect.innerHTML = "";
       Object.keys(PACKS).forEach(k => {
@@ -757,7 +834,6 @@
       lobbyPackSelect.value = currentPackKey;
     }
 
-    // Populate player count dropdown
     if (lobbyPlayerCount) {
       lobbyPlayerCount.innerHTML = "";
       for (let i = 2; i <= 8; i++) {
@@ -770,20 +846,16 @@
       lobbyPlayerCount.addEventListener("change", () => renderLobbyNames(Number(lobbyPlayerCount.value)));
     }
 
-    // Initialize player names in lobby
     renderLobbyNames(4);
-    
-    // Reset pools and counters
     resetPools();
     updateCounters();
     renderPlayers();
     setPhase("Lobby");
 
-    // AUTO-OPEN LOBBY on page load
+    // Auto-open lobby on page load
     openLobby();
   }
 
-  // Run init when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

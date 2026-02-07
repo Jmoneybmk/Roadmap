@@ -404,8 +404,17 @@ body {
 }
 
 /* =====================================================
-   VOTE GRID
+   VOTE GRID - Scrollable
    ===================================================== */
+.vote-grid-container {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid rgba(31,41,55,.5);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(0,0,0,.15);
+}
+
 .vote-grid {
   display: flex;
   flex-direction: column;
@@ -460,8 +469,17 @@ body {
 }
 
 /* =====================================================
-   SCOREBOARD
+   SCOREBOARD - Scrollable
    ===================================================== */
+.score-list-container {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid rgba(31,41,55,.5);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(0,0,0,.15);
+}
+
 .score-list {
   display: flex;
   flex-direction: column;
@@ -650,6 +668,31 @@ body {
 
 .name-field input:focus {
   border-color: rgba(96,165,250,.7);
+}
+
+/* =====================================================
+   SCROLLBAR STYLING
+   ===================================================== */
+.vote-grid-container::-webkit-scrollbar,
+.score-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vote-grid-container::-webkit-scrollbar-track,
+.score-list-container::-webkit-scrollbar-track {
+  background: rgba(0,0,0,.2);
+  border-radius: 3px;
+}
+
+.vote-grid-container::-webkit-scrollbar-thumb,
+.score-list-container::-webkit-scrollbar-thumb {
+  background: rgba(96,165,250,.3);
+  border-radius: 3px;
+}
+
+.vote-grid-container::-webkit-scrollbar-thumb:hover,
+.score-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(96,165,250,.5);
 }
 
 /* =====================================================

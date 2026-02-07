@@ -52,7 +52,39 @@
           </button>
         </div>
 
-        <button class="btn primary large" id="btnOpenLobby">Setup Lobby</button>
+        <button class="btn primary large hidden" id="btnNext">Next</button>
+      </div>
+    </section>
+
+    <!-- SETTINGS PANEL -->
+    <section class="panel welcome-panel hidden" id="settingsPanel">
+      <div class="welcome-content">
+        <h1>Game Settings</h1>
+        <p class="muted">Configure players and target score.</p>
+        
+        <div class="settings-form">
+          <div class="settings-grid">
+            <div class="field">
+              <label>Players (2–8)</label>
+              <select id="settingsPlayerCount" class="select"></select>
+            </div>
+
+            <div class="field">
+              <label>Target Score</label>
+              <input id="settingsTargetScore" class="input" type="number" min="5" max="50" value="10" />
+            </div>
+          </div>
+
+          <div class="section-split"></div>
+          
+          <h4 class="section-title">Player Names</h4>
+          <div class="names-grid" id="settingsNames"></div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn" id="btnBackToMode">← Back</button>
+          <button class="btn primary large" id="btnStartGame">Start Game</button>
+        </div>
       </div>
     </section>
 
@@ -147,52 +179,6 @@
       </div>
     </section>
   </main>
-
-  <!-- LOBBY MODAL -->
-  <div class="modal-backdrop hidden" id="lobbyBackdrop">
-    <div class="modal">
-      <div class="modal-head">
-        <div>
-          <div class="modal-title">Lobby Setup</div>
-          <div class="muted small">Configure players and game settings.</div>
-        </div>
-        <button class="btn" id="btnCloseLobby">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="lobby-grid">
-          <div class="field">
-            <label>Game Mode</label>
-            <select id="lobbyMode" class="select">
-              <option value="singles">Singles (1v1)</option>
-              <option value="duos">Duos (2v2)</option>
-              <option value="teams">Teams (Team vs Team)</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Players (2–8)</label>
-            <select id="lobbyPlayerCount" class="select"></select>
-          </div>
-
-          <div class="field">
-            <label>Target Score</label>
-            <input id="lobbyTargetScore" class="input" type="number" min="5" max="50" value="10" />
-          </div>
-        </div>
-
-        <div class="section-split"></div>
-        
-        <h4 class="section-title">Player Names</h4>
-        <div class="names-grid" id="lobbyNames"></div>
-      </div>
-
-      <div class="modal-foot">
-        <div class="muted small">First to target score wins!</div>
-        <button class="btn primary" id="btnStartGame">Start Game</button>
-      </div>
-    </div>
-  </div>
 
   <script src="versus_data.js"></script>
   <script src="versus_app.js"></script>

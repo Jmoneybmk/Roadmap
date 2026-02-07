@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Big Domo — Party Games</title>
+  <title>AniVerse Games — Party Games</title>
   <link rel="stylesheet" href="menu_styles.css" />
 </head>
 
@@ -12,73 +12,89 @@
   <header class="topbar">
     <div class="topbar-left">
       <div class="brand">
-        <div class="logo">BD</div>
+        <div class="logo"><img src="Images/Anime/Logo/AniVerse.png" alt="AniVerse" style="width:100%;height:100%;object-fit:contain;" /></div>
         <div style="min-width:0">
-          <div class="title">Domo Games</div>
-          <div class="subtitle">Choose a mode • Host on Discord • Track rounds & points</div>
+          <div class="title">AniVerse Games</div>
+          <div class="subtitle">Anime party games • Host with friends • Compete and debate</div>
         </div>
       </div>
     </div>
     <div class="topbar-right">
-      <div class="pill">Modes: <b>3</b></div>
+      <div class="pill">Modes: <b>8</b></div>
       <div class="pill">State: <b>Local</b></div>
     </div>
   </header>
 
   <main class="menu">
-    <section class="card hero">
-      <h1>Welcome to Domo Games!</h1>
-      <p class="muted">Please choose a game mode. Each mode opens in its own page and always returns here.</p>
+    <section class="card hero" style="text-align:center;">
+      <h1>Welcome to AniVerse Games!</h1>
+      <img src="Images/Anime/Logo/AniVerse.png" alt="AniVerse Games" style="max-width:700px;width:100%;max-height:200px;margin:20px auto;display:block;object-fit:cover;object-position:center;" />
+      <p class="muted">Choose your game mode. Anime-themed party games for you and your friends.</p>
     </section>
 
     <section class="grid">
-      <a class="mode" href="debate/debate.html">
+      <a class="mode" href="Debate/debate.html">
         <div class="mode-top">
           <div class="badge">DEBATE</div>
-          <div class="mode-title">Debate Cards</div>
+          <div class="mode-title">Debate Battle</div>
         </div>
-        <div class="mode-sub">Draw a scenario prompt, get random character options, debate outcomes, vote winners.</div>
+        <div class="mode-sub">Draw scenarios, pick random anime characters, debate outcomes, and vote on winners.</div>
       </a>
 
-      <a class="mode" href="draft/draft.html">
+      <a class="mode" href="Draft/draft.html">
         <div class="mode-top">
           <div class="badge">DRAFT</div>
           <div class="mode-title">Team Draft Royale</div>
         </div>
-        <div class="mode-sub">Snake draft teams, assign roles, swap, debate, vote winner.</div>
+        <div class="mode-sub">Snake draft your dream anime team, assign roles, debate matchups, and vote for the winner.</div>
       </a>
 
-      <a class="mode" href="trivia/trivia.html">
+      <a class="mode" href="Trivia/trivia.html">
         <div class="mode-top">
           <div class="badge">TRIVIA</div>
-          <div class="mode-title">Trivia Showdown</div>
+          <div class="mode-title">Anime Trivia</div>
         </div>
-        <div class="mode-sub">Multiple-choice trivia, reveal answers, score points, tiebreak until winner.</div>
+        <div class="mode-sub">Test your anime knowledge with multiple-choice questions. First to the target score wins!</div>
       </a>
 
-      <a class="mode" href="versus/versus.html">
+      <a class="mode" href="Versus/versus.html">
         <div class="mode-top">
           <div class="badge">VERSUS</div>
           <div class="mode-title">Versus Mode</div>
         </div>
-        <div class="mode-sub">Head-to-head matchups, argue who wins and why, vote results, track wins and streaks.</div>
+        <div class="mode-sub">Draft your fighter, battle random opponents with unique challenges, vote on matchups, and climb to victory.</div>
       </a>
 
-      <a class="mode" href="hilo/hilo.html">
+      <a class="mode" href="HiLo/hilo.html">
         <div class="mode-top">
           <div class="badge">HI/LO</div>
-          <div class="mode-title">Higher or Lower</div>
+          <div class="mode-title">Anime Rating Guess</div>
         </div>
-        <div class="mode-sub">Interesting take on Hi/Lo.</div>
+        <div class="mode-sub">Bet points guessing if anime ratings are higher or lower. Modifiers and strategic betting add chaos!</div>
       </a>
 
-      <a class="mode" href="court/court.html">
+      <a class="mode" href="Crown/crown.html">
         <div class="mode-top">
-          <div class="badge">DISPUTE</div>
+          <div class="badge">TOURNAMENT</div>
+          <div class="mode-title">Crown The King</div>
+        </div>
+        <div class="mode-sub">Vote through tournament brackets to crown the ultimate anime character or series champion.</div>
+      </a>
+
+      <a class="mode" href="Court/court.html">
+        <div class="mode-top">
+          <div class="badge">TRIAL</div>
           <div class="mode-title">Court Battle</div>
         </div>
-        <div class="mode-sub">Random case goes on trial, teams argue prosecution/defense, timed phases, judge rules.
+        <div class="mode-sub">Anime characters on trial! Teams argue prosecution and defense in timed rounds. Judge delivers the verdict.</div>
+      </a>
+
+      <a class="mode" href="Hangman/hangman.html">
+        <div class="mode-top">
+          <div class="badge">HANGMAN</div>
+          <div class="mode-title">Anime Hangman</div>
         </div>
+        <div class="mode-sub">Teams race to guess anime characters, moves, and locations. Use hints carefully - they cost guesses!</div>
       </a>
     </section>
 

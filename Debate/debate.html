@@ -29,8 +29,8 @@
   </header>
 
   <main class="layout debate-layout">
-    <!-- LEFT: CONTROLS + PLAYERS -->
-    <aside class="panel">
+    <!-- LEFT: CONTROLS + PLAYERS + USED POOLS -->
+    <aside class="panel controls-panel">
       <div class="panel-header">
         <div>
           <h2>Controls</h2>
@@ -41,8 +41,8 @@
       <div class="panel-body">
         <div class="btn-row">
           <button class="btn primary" id="btnLobby">Lobby Setup</button>
-          <button class="btn" id="btnNewRound">New Round</button>
-          <button class="btn" id="btnLock">Lock Picks</button>
+          <button class="btn" id="btnNewPrompt">New Prompt</button>
+          <button class="btn" id="btnNewChars">New Characters</button>
           <button class="btn warning" id="btnReveal">Reveal Modifier</button>
           <button class="btn" id="btnVoting">Start Voting</button>
           <button class="btn" id="btnNext">Next Round</button>
@@ -56,13 +56,15 @@
         </div>
 
         <div class="hint" id="hintBox" style="margin-top:12px;">
-          Start with <b>Lobby Setup</b>, then <b>New Round</b>.
+          Each player has 1 character! Debate, then <b>Start Voting</b>. Host can <b>Reveal Modifier</b> anytime.
         </div>
 
         <div class="section-split"></div>
 
         <h3 class="section-title">Players</h3>
-        <div class="players" id="playersWrap"></div>
+        <div class="players-scroll-container">
+          <div class="players" id="playersWrap"></div>
+        </div>
         <div class="muted small" style="margin-top:8px;">
           Tip: Empty name = disabled slot (won't appear in dropdowns or scoring).
         </div>
@@ -87,8 +89,8 @@
       </div>
     </aside>
 
-    <!-- RIGHT: BOARD -->
-    <section class="panel">
+    <!-- RIGHT: BOARD (wider for better prompt readability) -->
+    <section class="panel board-panel">
       <div class="panel-header">
         <div>
           <h2>Board</h2>
@@ -119,7 +121,9 @@
         <div class="section-split"></div>
 
         <h3 class="section-title" style="margin:0;">Character Options</h3>
-        <div class="options-grid" id="optionsGrid"></div>
+        <div class="options-container">
+          <div class="options-grid" id="optionsGrid"></div>
+        </div>
       </div>
     </section>
   </main>

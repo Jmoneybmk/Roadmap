@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BD — Crown the King</title>
+  <link rel="stylesheet" href="crown_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="../index.html" title="Back to Main Menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div style="min-width:0">
+          <div class="title">Crown the King</div>
+          <div class="subtitle" id="subtitleText">Tournament Bracket • Vote • Crown the Winner</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="pill">Phase: <b><span id="phasePill">Lobby</span></b></div>
+      <div class="pill">Round: <b><span id="roundPill">—</span></b></div>
+      <div class="pill">Matchup: <b><span id="matchupPill">—</span></b></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: BRACKET VIEW / MATCHUP VIEW -->
+    <section class="panel main-panel">
+      <div class="panel-header">
+        <div>
+          <h2 id="mainPanelTitle">Tournament</h2>
+          <p class="muted small" id="mainPanelSub">Bracket will appear here</p>
+        </div>
+        <div class="panel-actions">
+          <div class="pill category-pill" id="categoryPill">Category: —</div>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <!-- BRACKET VIEW -->
+        <div id="bracketView" class="bracket-view">
+          <div class="bracket-container" id="bracketContainer">
+            <!-- Bracket rounds generated here -->
+          </div>
+        </div>
+
+        <!-- MATCHUP VIEW -->
+        <div id="matchupView" class="matchup-view hidden">
+          <div class="category-question" id="categoryQuestion">Who would win in a fight?</div>
+          
+          <div class="matchup-cards">
+            <div class="matchup-card" id="cardA">
+              <div class="card-image">
+                <img id="imageA" src="" alt="Competitor A" />
+              </div>
+              <div class="card-info">
+                <div class="card-name" id="nameA">—</div>
+                <div class="card-sub" id="subA">—</div>
+              </div>
+              <div class="vote-count hidden" id="votesA">0 votes</div>
+            </div>
+
+            <div class="vs-badge">VS</div>
+
+            <div class="matchup-card" id="cardB">
+              <div class="card-image">
+                <img id="imageB" src="" alt="Competitor B" />
+              </div>
+              <div class="card-info">
+                <div class="card-name" id="nameB">—</div>
+                <div class="card-sub" id="subB">—</div>
+              </div>
+              <div class="vote-count hidden" id="votesB">0 votes</div>
+            </div>
+          </div>
+
+          <div class="winner-banner hidden" id="winnerBanner">
+            <div class="winner-label">WINNER</div>
+            <div class="winner-name" id="matchWinnerName">—</div>
+          </div>
+        </div>
+
+        <!-- CHAMPION VIEW -->
+        <div id="championView" class="champion-view hidden">
+          <div class="champion-crown">👑</div>
+          <div class="champion-title">CROWNED THE KING</div>
+          <div class="champion-card">
+            <img id="championImage" src="" alt="Champion" />
+            <div class="champion-name" id="championName">—</div>
+            <div class="champion-sub" id="championSub">—</div>
+          </div>
+          <div class="champion-category" id="championCategory">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: HOST CONTROLS -->
+    <aside class="panel controls-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Host Controls</h2>
+          <p class="muted small">Manage the tournament</p>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="btn-row">
+          <button class="btn primary" id="btnLobby">Lobby Setup</button>
+          <button class="btn" id="btnShowBracket">Show Bracket</button>
+        </div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn" id="btnStartMatchup">Start Matchup</button>
+          <button class="btn" id="btnStartVote">Start Vote</button>
+          <button class="btn primary" id="btnRevealWinner">Reveal Winner</button>
+        </div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn" id="btnNextMatchup">Next Matchup</button>
+          <button class="btn danger" id="btnRestart">Restart</button>
+        </div>
+
+        <div class="hint" id="hintBox" style="margin-top:12px;">
+          Click <b>Lobby Setup</b> to configure the tournament.
+        </div>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title">Category</h3>
+        <div class="category-controls">
+          <select id="categorySelect" class="select">
+            <!-- Categories populated by JS -->
+          </select>
+          <button class="btn" id="btnRandomCategory">🎲 Random</button>
+        </div>
+        <p class="muted small" style="margin-top:8px;" id="categoryChangeHint">Change category anytime during the tournament.</p>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title">Voting</h3>
+        <p class="muted small" id="voteHint">Cast votes for each player below.</p>
+        <div class="vote-grid-container">
+          <div class="vote-grid" id="voteGrid">
+            <!-- Vote rows generated here -->
+          </div>
+        </div>
+
+        <div class="section-split"></div>
+
+        <h3 class="section-title">Tournament Info</h3>
+        <div class="info-grid">
+          <div class="info-chip">
+            <div class="info-label">Type</div>
+            <div class="info-value" id="infoType">—</div>
+          </div>
+          <div class="info-chip">
+            <div class="info-label">Bracket Size</div>
+            <div class="info-value" id="infoBracketSize">—</div>
+          </div>
+          <div class="info-chip">
+            <div class="info-label">Remaining</div>
+            <div class="info-value" id="infoRemaining">—</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- LOBBY MODAL -->
+  <div class="modal-backdrop" id="lobbyBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Lobby Setup</div>
+          <p class="muted small">Configure your tournament.</p>
+        </div>
+        <button class="btn" id="btnCloseLobby">Close</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="lobby-grid">
+          <div class="field">
+            <label>Pack</label>
+            <select id="lobbyPack" class="select"></select>
+          </div>
+          <div class="field">
+            <label>Tournament Type</label>
+            <select id="lobbyType" class="select">
+              <option value="characters">Characters</option>
+              <option value="series">Series (Anime)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bracket Size</label>
+            <select id="lobbyBracketSize" class="select">
+              <option value="8">8 Competitors</option>
+              <option value="16" selected>16 Competitors</option>
+              <option value="32">32 Competitors</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="lobby-grid" style="margin-top:12px;">
+          <div class="field">
+            <label>Starting Category</label>
+            <select id="lobbyCategory" class="select"></select>
+          </div>
+          <div class="field">
+            <label>New Category Every Round?</label>
+            <select id="lobbyNewCategory" class="select">
+              <option value="no" selected>No (Same category throughout)</option>
+              <option value="yes">Yes (Change each round)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Selection Mode</label>
+            <select id="lobbySelectionMode" class="select">
+              <option value="random" selected>Random</option>
+              <option value="host">Host Picks</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-split"></div>
+
+        <div class="field">
+          <label>Players (Voters)</label>
+          <select id="lobbyPlayerCount" class="select">
+            <option value="1">1 Player</option>
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4" selected>4 Players</option>
+            <option value="5">5 Players</option>
+            <option value="6">6 Players</option>
+            <option value="7">7 Players</option>
+            <option value="8">8 Players</option>
+          </select>
+        </div>
+
+        <div class="names-grid" id="lobbyNames" style="margin-top:12px;">
+          <!-- Player name inputs generated here -->
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <p class="muted small">Tip: Players vote on each matchup. Majority wins.</p>
+        <button class="btn primary" id="btnStartTournament">Start Tournament</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOST PICKS MODAL -->
+  <div class="modal-backdrop hidden" id="picksBackdrop">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Select Competitors</div>
+          <p class="muted small">Choose <span id="picksNeeded">16</span> entries for the bracket.</p>
+        </div>
+        <button class="btn" id="btnClosePicks">Close</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="picks-search">
+          <input type="text" id="picksSearch" class="input" placeholder="Search..." />
+          <span class="muted small" id="picksCount">0 / 16 selected</span>
+        </div>
+        <div class="picks-grid" id="picksGrid">
+          <!-- Selectable entries generated here -->
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" id="btnClearPicks">Clear All</button>
+        <button class="btn primary" id="btnConfirmPicks">Confirm Selection</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="crown_data.js"></script>
+  <script src="crown_app.js"></script>
+</body>
+</html>

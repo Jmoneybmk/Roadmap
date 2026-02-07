@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hangman – Anime Pack</title>
+  <link rel="stylesheet" href="hangman_styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back" href="../index.html" aria-label="Back to main menu">← Main Menu</a>
+      <div class="brand">
+        <div class="logo">BD</div>
+        <div style="min-width:0">
+          <div class="title">Hangman</div>
+          <div class="subtitle">Guess the anime word before the figure is complete</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="pill">Pack: <b id="packLabel">Anime</b></div>
+      <div class="pill">Teams: <b id="teamsLabel">—</b></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- LOBBY -->
+    <section id="lobby" class="card">
+      <div class="card-head">
+        <h2>Lobby Setup</h2>
+        <p class="muted">Configure teams, category, and timer options.</p>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>Pack</label>
+          <select id="packSelect">
+            <option value="anime" selected>Anime</option>
+          </select>
+          <div class="help">More packs coming soon!</div>
+        </div>
+
+        <div class="field">
+          <label>Number of Teams (1–8)</label>
+          <input id="teamCount" type="number" min="1" max="8" value="2" />
+          <div class="help">Each team gets their own word to solve.</div>
+        </div>
+
+        <div class="field">
+          <label>Categories</label>
+          <div class="checkboxGroup" id="categoryCheckboxes">
+            <!-- Populated by JS -->
+          </div>
+          <div class="help">Select at least one category.</div>
+        </div>
+
+        <div class="field">
+          <label>Timer</label>
+          <div class="toggleRow">
+            <input id="timerToggle" type="checkbox" />
+            <span>Enable timer</span>
+          </div>
+          <input id="timerSeconds" type="number" min="10" max="600" value="60" disabled />
+          <div class="help">Timer resets on each correct letter guess.</div>
+        </div>
+
+        <div class="field">
+          <label>Total Rounds</label>
+          <input id="totalRounds" type="number" min="1" max="20" value="5" />
+          <div class="help">Game ends after this many rounds.</div>
+        </div>
+      </div>
+
+      <div class="playersBox">
+        <div class="playersHead">
+          <h3>Team Names</h3>
+          <span class="muted small">Blank names will default to Team 1, Team 2...</span>
+        </div>
+        <div id="teamInputs" class="playerInputs"></div>
+      </div>
+
+      <div class="actions">
+        <button id="btnStart" class="btn primary">Start Game</button>
+      </div>
+
+      <div id="lobbyStatus" class="status muted"></div>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="game hidden">
+      <section class="leftCol">
+        <div class="card roundCard">
+          <div class="roundTop">
+            <div>
+              <div class="kicker">Round</div>
+              <div class="big" id="roundLabel">1 / 5</div>
+            </div>
+            <div class="turnBox">
+              <div class="kicker">Current Turn</div>
+              <div class="turnName" id="turnName">—</div>
+              <div class="turnMeta muted" id="turnMeta">—</div>
+            </div>
+            <div class="controls">
+              <button id="btnEndGame" class="btn ghost">End Game</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hangmanCard">
+          <div class="hangmanVisual">
+            <div class="chibi-character">
+              <!-- Head (part 1) -->
+              <div id="part1" class="chibi-part chibi-head">
+                <div class="hair-tuft"></div>
+              </div>
+              
+              <!-- Face: Eyes + Mouth (part 2) -->
+              <div id="part2" class="chibi-part chibi-face">
+                <div class="eye eye-left">
+                  <div class="pupil"></div>
+                  <div class="shine"></div>
+                </div>
+                <div class="eye eye-right">
+                  <div class="pupil"></div>
+                  <div class="shine"></div>
+                </div>
+                <div class="mouth"></div>
+              </div>
+              
+              <!-- Body (part 3) -->
+              <div id="part3" class="chibi-part chibi-body"></div>
+              
+              <!-- Left arm (part 4) -->
+              <div id="part4" class="chibi-part chibi-arm chibi-arm-left"></div>
+              
+              <!-- Right arm (part 5) -->
+              <div id="part5" class="chibi-part chibi-arm chibi-arm-right"></div>
+              
+              <!-- Left leg (part 6) -->
+              <div id="part6" class="chibi-part chibi-leg chibi-leg-left"></div>
+              
+              <!-- Right leg (part 7) -->
+              <div id="part7" class="chibi-part chibi-leg chibi-leg-right"></div>
+            </div>
+          </div>
+
+          <div class="gameInfo">
+            <div class="categoryBadge" id="categoryBadge">—</div>
+            <div class="wordDisplay" id="wordDisplay">_ _ _ _ _</div>
+            <div class="hintDisplay hidden" id="hintDisplay">
+              <div class="small muted">Hint</div>
+              <div class="hintText" id="hintText">—</div>
+            </div>
+            <div class="usedLetters">
+              <div class="small muted">Used Letters</div>
+              <div id="usedLettersDisplay" class="letterPills">—</div>
+            </div>
+            <div class="guessInfo">
+              <div class="guessCounter">
+                <span class="small muted">Guesses Remaining</span>
+                <span class="big" id="guessesLeft">7</span>
+              </div>
+              <div class="timerDisplay hidden" id="timerDisplay">
+                <span class="small muted">Time Left</span>
+                <span class="big" id="timerValue">60</span>
+              </div>
+              <div class="hintCounter">
+                <span class="small muted">Hints Left</span>
+                <span class="big" id="hintsLeft">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card actionCard">
+          <div class="actionInputs">
+            <div class="field">
+              <label>Guess a Letter or Solve the Word</label>
+              <input id="guessInput" type="text" placeholder="Type letter or full answer..." maxlength="50" />
+              <div class="help" id="inputHelp">Press Enter or click a button below.</div>
+            </div>
+
+            <div class="actionButtons">
+              <button id="btnGuessLetter" class="btn">Guess Letter</button>
+              <button id="btnSolveWord" class="btn">Solve Word</button>
+              <button id="btnUseHint" class="btn ghost">Use Hint (-1 Guess)</button>
+            </div>
+          </div>
+
+          <div id="resultBar" class="resultBar hidden"></div>
+        </div>
+      </section>
+
+      <section class="rightCol">
+        <div class="card scoreboard">
+          <div class="scoreHead">
+            <h3>Scoreboard</h3>
+            <div class="muted small">Click team name to edit.</div>
+          </div>
+
+          <div class="statsRow">
+            <div class="statBox">
+              <div class="small muted">Round Progress</div>
+              <div class="statValue" id="roundProgress">1 / 5</div>
+            </div>
+          </div>
+
+          <div id="teamsBox" class="teamsBox"></div>
+        </div>
+
+        <div class="card infoCard">
+          <h3>How to Play</h3>
+          <div class="muted small" style="line-height:1.5;">
+            Guess letters or attempt to solve the full word. Each wrong guess adds a body part (7 max). Timer resets on correct letter guesses. Earn points for solving: 10pts base + bonus for fewer wrong guesses (0 wrong = +10pts, 1-2 wrong = +5pts, 3-4 wrong = +2pts). Use hints wisely - each hint costs 1 guess!
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- WINNER MODAL -->
+    <div id="winnerModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modalCard">
+        <h2 id="winnerTitle">Game Over</h2>
+        <p id="winnerText" class="muted">—</p>
+        <div class="modalActions">
+          <button id="btnPlayAgain" class="btn primary">Play Again</button>
+          <button id="btnCloseWinner" class="btn ghost">Close</button>
+        </div>
+      </div>
+      <div class="modalBackdrop"></div>
+    </div>
+  </main>
+
+  <script src="hangman_data.js"></script>
+  <script src="hangman_app.js"></script>
+</body>
+</html>

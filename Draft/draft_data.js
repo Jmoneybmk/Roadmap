@@ -7,11 +7,11 @@ window.DRAFT_PACKS = {
     defaultRounds: 5,
 
     roles: [
-      { id: 'captain', name: 'Captain', blurb: 'Last fighter; sets the strategic plan.' },
-      { id: 'vice', name: 'Vice Captain', blurb: 'All-rounder; can handle any role under pressure.' },
-      { id: 'tank', name: 'Tank', blurb: 'Draws aggro first 60 seconds; must endure focus.' },
-      { id: 'assassin', name: 'Assassin', blurb: 'Fights alone; thrives isolated.' },
-      { id: 'support', name: 'Support', blurb: 'Helps first (shield/heal/revive); fights second.' },
+      { id: 'captain', name: 'Leader', blurb: 'Makes the final call and fights last.' },
+      { id: 'vice', name: 'Strategist', blurb: 'Plans the approach and adapts mid-fight.' },
+      { id: 'tank', name: 'Vanguard', blurb: 'Takes the first hit and controls the frontline.' },
+      { id: 'assassin', name: 'Striker', blurb: 'High damage, targets key enemies.' },
+      { id: 'support', name: 'Anchor', blurb: 'Buffs, heals, or enables the team.' },
     ],
 
     modifiers: [
@@ -406,14 +406,14 @@ window.DRAFT_PACKS = {
 
   // Template for additional packs
   gaming: {
-    title: "Gaming Pack (Template)",
+    title: "Gaming Pack",
     defaultRounds: 5,
     roles: [
-      { id: 'captain', name: 'Captain', blurb: 'Last fighter; sets the strategic plan.' },
-      { id: 'vice', name: 'Vice Captain', blurb: 'All-rounder; can handle any role under pressure.' },
-      { id: 'tank', name: 'Tank', blurb: 'Draws aggro first 60 seconds; must endure focus.' },
-      { id: 'assassin', name: 'Assassin', blurb: 'Fights alone; thrives isolated.' },
-      { id: 'support', name: 'Support', blurb: 'Helps first (shield/heal/revive); fights second.' },
+      { id: 'captain', name: 'Leader', blurb: 'Makes the final call and fights last.' },
+      { id: 'vice', name: 'Strategist', blurb: 'Plans the approach and adapts mid-fight.' },
+      { id: 'tank', name: 'Vanguard', blurb: 'Takes the first hit and controls the frontline.' },
+      { id: 'assassin', name: 'Striker', blurb: 'High damage, targets key enemies.' },
+      { id: 'support', name: 'Anchor', blurb: 'Buffs, heals, or enables the team.' },
     ],
     modifiers: [
       'No special abilities for first 30 seconds.',
